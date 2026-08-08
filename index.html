@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İva — Sesle Not Alan, Seni Hatırlatan Türkçe Üretkenlik Asistanı</title>
+<meta name="description" content="İva; toplantı ve ders notlarını sesle alan, görevlerini ve teslim tarihlerini takip eden, seni tam zamanında hatırlatan Türkçe yapay zekâ masaüstü asistanı.">
+<style>
+  :root{
+    --bg:#0b0e14; --bg2:#11151f; --panel:#151a26; --panel2:#1b2130;
+    --line:#242c3d; --text:#e6ecf5; --muted:#9aa6bd;
+    --accent:#5cc9f5; --accent2:#7c7bf7; --accent3:#4be3b4;
+    --gold:#ffcf5c; --glow:rgba(92,201,245,.35); --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  section{padding:80px 0}
+  h1,h2,h3{line-height:1.18;margin:0}
+  .eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--accent);font-weight:700;margin-bottom:14px}
+
+  nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(12px);background:rgba(11,14,20,.72);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent3);box-shadow:0 0 12px var(--accent3)}
+  .nav-links{display:flex;gap:24px;font-size:.92rem;color:var(--muted)}
+  .nav-links a:hover{color:var(--text)}
+  .nav-buy{padding:10px 20px;border-radius:999px;background:linear-gradient(100deg,var(--accent),var(--accent2));
+    color:#08111a;font-size:.9rem;font-weight:800;transition:.2s}
+  .nav-buy:hover{transform:translateY(-1px);box-shadow:0 8px 24px -8px var(--glow)}
+  @media(max-width:860px){.nav-links{display:none}}
+
+  .bar{background:linear-gradient(100deg,var(--accent2),var(--accent));color:#08111a;text-align:center;
+    font-size:.85rem;font-weight:700;padding:9px 14px}
+
+  .hero{position:relative;padding:64px 0 56px;
+    background:radial-gradient(600px 400px at 78% 18%,rgba(124,123,247,.16),transparent 60%),
+      radial-gradient(500px 400px at 12% 82%,rgba(75,227,180,.10),transparent 60%)}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+  .stars{color:var(--gold);font-size:.95rem;letter-spacing:2px}
+  .rate{color:var(--muted);font-size:.85rem;margin-left:8px}
+  .hero h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.02em;margin-top:16px}
+  .hero h1 .grad{background:linear-gradient(100deg,var(--accent),var(--accent2) 55%,var(--accent3));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lead{font-size:1.12rem;color:var(--muted);margin:20px 0 26px;max-width:44ch}
+  .ticks{list-style:none;padding:0;margin:0 0 28px;display:grid;gap:9px}
+  .ticks li{display:flex;align-items:center;gap:10px;font-size:.98rem}
+  .ticks li::before{content:"✓";display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
+    background:rgba(75,227,180,.15);color:var(--accent3);font-weight:800;font-size:.8rem;flex:none}
+  .price-row{display:flex;align-items:baseline;gap:12px;margin-bottom:18px}
+  .price-now{font-size:2rem;font-weight:800}
+  .price-old{color:var(--muted);text-decoration:line-through;font-size:1.05rem}
+  .price-save{background:rgba(255,207,92,.14);color:var(--gold);font-weight:700;font-size:.78rem;
+    padding:4px 10px;border-radius:999px;border:1px solid rgba(255,207,92,.3)}
+  .btns{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .btn{padding:15px 30px;border-radius:999px;font-weight:800;font-size:1.02rem;display:inline-flex;
+    align-items:center;gap:9px;transition:.2s;cursor:pointer;border:1px solid transparent}
+  .btn.primary{background:linear-gradient(100deg,var(--accent),var(--accent2));color:#08111a;box-shadow:0 10px 34px -8px var(--glow)}
+  .btn.primary:hover{transform:translateY(-2px)}
+  .btn.ghost{border-color:var(--line);background:var(--panel);color:var(--text);padding:15px 24px}
+  .btn.ghost:hover{border-color:var(--accent)}
+  .microtrust{color:var(--muted);font-size:.82rem;margin-top:14px}
+  @media(max-width:860px){.hero-grid{grid-template-columns:1fr;text-align:center}.hero p.lead{margin-inline:auto}
+    .ticks{max-width:360px;margin-inline:auto;text-align:left}.btns,.price-row{justify-content:center}}
+
+  .face-stage{display:flex;justify-content:center}
+  .device{width:340px;max-width:88vw;background:linear-gradient(160deg,#1c2334,#12172200);
+    border:1px solid var(--line);border-radius:28px;padding:26px;position:relative;box-shadow:0 40px 80px -30px rgba(0,0,0,.7)}
+  .screen{background:#000;border-radius:16px;aspect-ratio:2/1;position:relative;overflow:hidden;
+    box-shadow:inset 0 0 0 2px #05070b,0 0 40px -6px var(--glow)}
+  .eyes{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:34px}
+  .eye{width:56px;height:70px;background:#7fefff;border-radius:22px;box-shadow:0 0 18px #4be3ff88;animation:blink 4.2s infinite}
+  @keyframes blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+  .mouth{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:26px;height:26px;
+    border:4px solid #7fefff;border-top:none;border-radius:0 0 40px 40px;opacity:.85}
+  .device .label{position:absolute;bottom:-30px;left:0;right:0;text-align:center;color:var(--muted);font-size:.8rem}
+  .device::after{content:"";position:absolute;top:14px;right:20px;width:8px;height:8px;border-radius:50%;
+    background:var(--accent3);box-shadow:0 0 10px var(--accent3);animation:pulse 2s infinite}
+  @keyframes pulse{50%{opacity:.3}}
+  .badge-float{position:absolute;top:-14px;left:-14px;background:var(--gold);color:#08111a;font-weight:800;
+    font-size:.8rem;padding:8px 14px;border-radius:12px;transform:rotate(-6deg);box-shadow:0 8px 20px -6px rgba(0,0,0,.6)}
+
+  .strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2)}
+  .strip .wrap{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;align-items:center;padding:22px;color:var(--muted);font-size:.9rem}
+  .strip b{color:var(--text)}
+
+  .head{max-width:640px;margin:0 auto 46px;text-align:center}
+  .head h2{font-size:clamp(1.8rem,3.6vw,2.5rem);font-weight:800;letter-spacing:-.01em}
+  .head p{color:var(--muted);margin-top:14px;font-size:1.05rem}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.split{grid-template-columns:1fr}}
+  .pane{border:1px solid var(--line);border-radius:var(--radius);padding:26px;background:var(--panel)}
+  .pane h3{font-size:1.15rem;margin-bottom:14px}
+  .pane ul{margin:0;padding:0;list-style:none;display:grid;gap:11px}
+  .pane li{display:flex;gap:10px;color:var(--muted);font-size:.96rem}
+  .pane.bad li::before{content:"✕";color:#ff7a90;font-weight:800;flex:none}
+  .pane.good{background:linear-gradient(180deg,rgba(75,227,180,.06),var(--panel));border-color:rgba(75,227,180,.25)}
+  .pane.good li::before{content:"✓";color:var(--accent3);font-weight:800;flex:none}
+  .pane.good li{color:var(--text)}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:820px){.grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.grid{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);
+    border-radius:var(--radius);padding:24px;transition:.25s}
+  .card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 20px 40px -24px var(--glow)}
+  .ico{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:1.45rem;
+    background:var(--panel2);border:1px solid var(--line);margin-bottom:16px}
+  .card h3{font-size:1.1rem;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:.94rem;margin:0}
+
+  .tabs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:34px}
+  .tab-btn{padding:11px 20px;border-radius:999px;border:1px solid var(--line);background:var(--panel);
+    color:var(--muted);font-weight:700;font-size:.92rem;cursor:pointer;transition:.2s}
+  .tab-btn:hover{color:var(--text);border-color:var(--accent2)}
+  .tab-btn.active{background:linear-gradient(100deg,var(--accent),var(--accent2));color:#08111a;border-color:transparent}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block;animation:fadein .4s ease}
+  @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .cmd-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:700px){.cmd-grid{grid-template-columns:1fr}}
+  .cmd{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;
+    display:flex;gap:14px;align-items:flex-start;transition:.2s}
+  .cmd:hover{border-color:var(--accent2);transform:translateY(-3px);box-shadow:0 16px 30px -24px var(--glow)}
+  .cmd .emo{font-size:1.7rem;flex:none;line-height:1}
+  .cmd .say{color:var(--accent);font-weight:700;font-size:.96rem}
+  .cmd .say::before{content:"\201C"}.cmd .say::after{content:"\201D"}
+  .cmd .do{color:var(--muted);font-size:.9rem;margin-top:5px}
+
+  .box-sec{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .box-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  @media(max-width:820px){.box-grid{grid-template-columns:1fr 1fr}}
+  .box-item{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center}
+  .box-item .bi{font-size:1.8rem}
+  .box-item .t{font-weight:700;margin-top:10px}
+  .box-item .d{color:var(--muted);font-size:.85rem;margin-top:4px}
+
+  .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:760px){.flow{grid-template-columns:1fr}}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
+  .step .n{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:800;
+    background:linear-gradient(120deg,var(--accent),var(--accent2));color:#08111a;margin-bottom:14px}
+  .step h3{font-size:1.05rem;margin-bottom:6px}.step p{color:var(--muted);font-size:.92rem;margin:0}
+
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:stretch}
+  @media(max-width:820px){.plans{grid-template-columns:1fr}}
+  .plan{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:30px 26px;display:flex;flex-direction:column;position:relative}
+  .plan.pop{border-color:var(--accent2);box-shadow:0 24px 60px -30px var(--accent2);background:linear-gradient(180deg,rgba(124,123,247,.08),var(--panel))}
+  .plan .ptag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(100deg,var(--accent),var(--accent2));
+    color:#08111a;font-weight:800;font-size:.75rem;padding:6px 16px;border-radius:999px;white-space:nowrap}
+  .plan h3{font-size:1.2rem}
+  .plan .sub{color:var(--muted);font-size:.9rem;margin-top:6px;min-height:40px}
+  .plan .p{font-size:2rem;font-weight:800;margin:16px 0 4px}
+  .plan .p small{font-size:.9rem;color:var(--muted);font-weight:500}
+  .plan ul{list-style:none;padding:0;margin:18px 0 24px;display:grid;gap:10px}
+  .plan li{display:flex;gap:9px;font-size:.92rem;color:var(--muted)}
+  .plan li::before{content:"✓";color:var(--accent3);font-weight:800;flex:none}
+  .plan .buy{margin-top:auto;text-align:center;padding:13px;border-radius:12px;font-weight:800;transition:.2s;
+    border:1px solid var(--line);background:var(--panel2);color:var(--text)}
+  .plan.pop .buy{background:linear-gradient(100deg,var(--accent),var(--accent2));color:#08111a;border-color:transparent}
+  .plan .buy:hover{transform:translateY(-2px)}
+
+  .tsts{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:820px){.tsts{grid-template-columns:1fr}}
+  .tst{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
+  .tst .stars{font-size:.85rem;margin-bottom:12px}
+  .tst p{margin:0 0 16px;font-size:.96rem}
+  .tst .who{display:flex;align-items:center;gap:12px}
+  .tst .av{width:40px;height:40px;border-radius:50%;background:linear-gradient(120deg,var(--accent2),var(--accent3));
+    display:grid;place-items:center;font-weight:800;color:#08111a}
+  .tst .who b{display:block;font-size:.92rem}.tst .who span{color:var(--muted);font-size:.8rem}
+
+  .guar{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;
+    background:linear-gradient(180deg,rgba(75,227,180,.06),var(--panel));border:1px solid rgba(75,227,180,.25);
+    border-radius:22px;padding:34px}
+  @media(max-width:620px){.guar{grid-template-columns:1fr;text-align:center}}
+  .guar .seal{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;font-size:2.6rem;
+    background:rgba(75,227,180,.12);border:2px solid rgba(75,227,180,.4);margin:auto}
+  .guar h3{font-size:1.4rem;margin-bottom:8px}.guar p{color:var(--muted);margin:0}
+
+  .faq{max-width:760px;margin:0 auto;display:grid;gap:12px}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px 20px;transition:.2s}
+  details[open]{border-color:var(--accent2)}
+  summary{cursor:pointer;padding:16px 0;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:14px}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--accent);font-size:1.4rem;font-weight:400;flex:none}
+  details[open] summary::after{content:"–"}
+  details p{margin:0 0 18px;color:var(--muted);font-size:.95rem}
+
+  .cta-box{text-align:center;background:radial-gradient(500px 300px at 50% 0%,rgba(124,123,247,.2),transparent 65%),var(--panel);
+    border:1px solid var(--line);border-radius:26px;padding:60px 30px}
+  .cta-box h2{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800}
+  .cta-box p{color:var(--muted);max-width:46ch;margin:16px auto 30px}
+
+  footer{border-top:1px solid var(--line);padding:36px 0;color:var(--muted);font-size:.88rem}
+  footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+
+  .sticky-buy{position:fixed;bottom:0;left:0;right:0;z-index:70;background:rgba(17,21,31,.95);
+    backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:12px 16px;display:none;
+    align-items:center;justify-content:space-between;gap:12px}
+  .sticky-buy .sp{font-weight:800}.sticky-buy .sp small{color:var(--muted);font-weight:500;font-size:.75rem;display:block}
+  .sticky-buy a{padding:12px 22px;border-radius:999px;background:linear-gradient(100deg,var(--accent),var(--accent2));color:#08111a;font-weight:800}
+  @media(max-width:860px){.sticky-buy{display:flex}body{padding-bottom:72px}}
+
+  .reveal{opacity:0;transform:translateY(24px);transition:.7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* Masaüstü uygulaması bölümü */
+  .app-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+  @media(max-width:860px){.app-grid{grid-template-columns:1fr;gap:28px}}
+  .app-shot{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+    background:var(--panel);box-shadow:0 30px 60px -30px rgba(0,0,0,.8)}
+  .app-shot img{display:block;width:100%;height:auto}
+  .app-info .ticks{margin-bottom:24px}
+  .btn.dl{flex-direction:column;align-items:flex-start;gap:2px;padding:14px 26px}
+  .btn.dl small{font-weight:600;font-size:.76rem;opacity:.75}
+  .dl-note{margin-top:16px;padding:14px 16px;border-radius:12px;font-size:.86rem;
+    color:var(--muted);background:rgba(255,207,92,.07);border:1px solid rgba(255,207,92,.28)}
+  .dl-note b{color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div class="bar">🎓 Öğrenci ve genç profesyoneller için · Bugüne özel %20 indirim + ücretsiz kargo</div>
+
+<nav>
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span> İva</div>
+    <div class="nav-links">
+      <a href="#neden">Neden İva?</a>
+      <a href="#yetenekler">Neler Yapar?</a>
+      <a href="#kutu">Kutuda Ne Var</a>
+      <a href="#uygulama">Uygulama</a>
+      <a href="#paketler">Paketler</a>
+      <a href="#yorumlar">Yorumlar</a>
+      <a href="#sss">SSS</a>
+    </div>
+    <a class="nav-buy" href="#paketler">Hemen Al</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div><span class="stars">★★★★★</span><span class="rate">200+ öğrenci ve profesyonel kullanıyor</span></div>
+      <h1>Sen konuş, <span class="grad">İva not alsın.</span> Gerisini o takip eder.</h1>
+      <p class="lead">Toplantı ve ders notlarını sesle al, görevlerini ve teslim tarihlerini takip et, odak seanslarını yönet. Masanda duran sesli üretkenlik asistanın — elini klavyeye sürmeden.</p>
+      <ul class="ticks">
+        <li>Toplantı ve ders notlarını sesle al</li>
+        <li>Ödev, sınav ve teslim tarihlerini takip et</li>
+        <li>Hatırlatma, bildirim ve Pomodoro odak yönetimi</li>
+      </ul>
+      <div class="price-row">
+        <span class="price-now">₺1.499</span>
+        <span class="price-old">₺1.899</span>
+        <span class="price-save">₺400 indirim</span>
+      </div>
+      <div class="btns">
+        <a class="btn primary" href="#paketler">🛒 Hemen Sipariş Ver</a>
+        <a class="btn ghost" href="#yetenekler">Neler Yapabildiğini Gör</a>
+      </div>
+      <div class="microtrust">✓ 14 gün koşulsuz iade · ✓ 1 yıl garanti · ✓ Türkçe destek</div>
+    </div>
+    <div class="face-stage">
+      <div class="device">
+        <div class="badge-float">Kurulum yok, konuşmaya başla</div>
+        <div class="screen">
+          <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
+          <div class="mouth"></div>
+        </div>
+        <div class="label">Masanın sesli asistanı · her zaman hazır</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="strip">
+  <div class="wrap">
+    <span>🚚 <b>Ücretsiz kargo</b></span>
+    <span>🔄 <b>14 gün iade</b></span>
+    <span>🛡️ <b>1 yıl garanti</b></span>
+    <span>🇹🇷 <b>Tamamen Türkçe</b></span>
+    <span>💬 <b>WhatsApp destek</b></span>
+  </div>
+</div>
+
+<!-- NEDEN -->
+<section id="neden">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Neden İva?</div>
+      <h2>Not defterleri ve onlarca uygulama yerine tek bir ses</h2>
+      <p>Notlar dağınık, teslim tarihleri unutuluyor, odaklanmak için 5 farklı uygulama açıyorsun. İva hepsini tek yerde, sesle toplar.</p>
+    </div>
+    <div class="split">
+      <div class="pane bad reveal">
+        <h3>İva olmadan</h3>
+        <ul>
+          <li>Toplantı/derste yazmakla uğraşırken konuşmayı kaçırmak</li>
+          <li>Farklı yerlere dağılmış notlar, unutulan teslim tarihleri</li>
+          <li>Hatırlatma, zamanlayıcı, not için ayrı ayrı uygulamalar</li>
+          <li>İngilizce sesli asistanlarla boğuşmak</li>
+        </ul>
+      </div>
+      <div class="pane good reveal">
+        <h3>İva ile</h3>
+        <ul>
+          <li>Sen dinlerken o not alır — "İva, not al" yeter</li>
+          <li>Notlar, görevler ve teslim tarihleri tek yerde</li>
+          <li>Not, hatırlatma ve Pomodoro; hepsi tek cihazda</li>
+          <li>Baştan sona akıcı, doğal Türkçe</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Öne Çıkanlar</div>
+      <h2>Günlük iş akışını hızlandıran özellikler</h2>
+    </div>
+    <div class="grid">
+      <div class="card reveal"><div class="ico">🎙️</div><h3>Sesle not al</h3><p>Toplantı, ders, fikir… söyle, İva yazsın. Elin serbest, aklın konuşmada kalsın.</p></div>
+      <div class="card reveal"><div class="ico">📅</div><h3>Görev & ders takibi</h3><p>Ödevler, sınavlar, teslim tarihleri ve yapılacaklar; hepsini kaydeder ve takip eder.</p></div>
+      <div class="card reveal"><div class="ico">⏰</div><h3>Zamanında hatırlatır</h3><p>Bildirim ve hatırlatmalarla hiçbir teslim tarihini ya da toplantıyı kaçırma.</p></div>
+      <div class="card reveal"><div class="ico">🍅</div><h3>Odak & Pomodoro</h3><p>Çalışma seanslarını başlatır, molalarını hatırlatır, verimini korur.</p></div>
+      <div class="card reveal"><div class="ico">🌍</div><h3>Dil pratiği</h3><p>İngilizce ve Çince konuşma pratiği, anında çeviri — masanda bir dil partneri.</p></div>
+      <div class="card reveal"><div class="ico">🔒</div><h3>Verin sende kalır</h3><p>Dilersen tüm veri kendi bilgisayarında çalışır; buluta hiçbir şey gitmez.</p></div>
+      <div class="card reveal"><div class="ico">🗣️</div><h3>Kendi ismini ver</h3><p>Uyandırma kelimesi artık senin seçimin — "İva" yerine istediğin ismi birkaç tıkla ata, cihazı yeniden programlamana gerek yok.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section id="yetenekler" class="box-sec">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Bu Ürünle Neler Yapabilirsin?</div>
+      <h2>Bir sesli komut, tamamlanmış bir iş</h2>
+      <p>Bir kategori seç, İva'ya nasıl seslenebileceğini gör.</p>
+    </div>
+
+    <div class="tabs reveal">
+      <button class="tab-btn active" data-tab="t-work">✅ Verimlilik</button>
+      <button class="tab-btn" data-tab="t-dil">🗣️ Dil & Öğrenme</button>
+      <button class="tab-btn" data-tab="t-pc">💻 Bilgisayar Kontrolü</button>
+      <button class="tab-btn" data-tab="t-info">🧮 Hesap & Bilgi</button>
+      <button class="tab-btn" data-tab="t-fun">🎮 Mola & Eğlence</button>
+    </div>
+
+    <!-- VERİMLİLİK -->
+    <div class="tab-panel active" id="t-work">
+      <div class="cmd-grid">
+        <div class="cmd"><span class="emo">📝</span><div><div class="say">İva, not al: toplantıda proje teslimi cumaya çekildi</div><div class="do">Notunu anında kaydeder, istersen Telegram'a iletir.</div></div></div>
+        <div class="cmd"><span class="emo">📚</span><div><div class="say">Yarınki vize sınavımı hatırlat</div><div class="do">Hatırlatma ve bildirim kurar, zamanı gelince seni uyarır.</div></div></div>
+        <div class="cmd"><span class="emo">✅</span><div><div class="say">Görev ekle: makale taslağını bitir</div><div class="do">Yapılacaklar listene ekler, bitince "tamamlandı" işaretler.</div></div></div>
+        <div class="cmd"><span class="emo">🍅</span><div><div class="say">Pomodoro başlat</div><div class="do">25 dakikalık odak sayacı başlatır, molanı hatırlatır.</div></div></div>
+        <div class="cmd"><span class="emo">📔</span><div><div class="say">Bugünkü çalışmalarımı günlüğüme yaz</div><div class="do">Günün özetini tutar, ne yaptığını takip edersin.</div></div></div>
+        <div class="cmd"><span class="emo">🔥</span><div><div class="say">Bugün 2 saat ders çalıştım, alışkanlığa ekle</div><div class="do">Çalışma serilerini (streak) takip eder, motive tutar.</div></div></div>
+      </div>
+    </div>
+
+    <!-- DİL -->
+    <div class="tab-panel" id="t-dil">
+      <div class="cmd-grid">
+        <div class="cmd"><span class="emo">🇬🇧</span><div><div class="say">İva, benimle İngilizce pratik yap</div><div class="do">Seninle İngilizce sohbet eder, hatalarını nazikçe düzeltir.</div></div></div>
+        <div class="cmd"><span class="emo">🇨🇳</span><div><div class="say">Bunu Çince nasıl söylerim?</div><div class="do">Kelime ve cümleleri telaffuzuyla birlikte öğretir.</div></div></div>
+        <div class="cmd"><span class="emo">📖</span><div><div class="say">Bana 5 yeni İngilizce kelime öğret</div><div class="do">Örnek cümlelerle kelime dağarcığını her gün büyütür.</div></div></div>
+        <div class="cmd"><span class="emo">🔤</span><div><div class="say">Şu cümleyi İngilizceye çevir</div><div class="do">Anında Türkçe ↔ İngilizce / Çince çeviri yapar.</div></div></div>
+      </div>
+    </div>
+
+    <!-- PC -->
+    <div class="tab-panel" id="t-pc">
+      <div class="cmd-grid">
+        <div class="cmd"><span class="emo">🌐</span><div><div class="say">Gmail'i aç</div><div class="do">Gmail, Spotify, YouTube… istediğin siteyi tarayıcında açar.</div></div></div>
+        <div class="cmd"><span class="emo">🔎</span><div><div class="say">Web'de kaynak makale ara</div><div class="do">Senin için Google araması yapar, sonucu açar.</div></div></div>
+        <div class="cmd"><span class="emo">▶️</span><div><div class="say">Odaklanmak için bir müzik aç</div><div class="do">YouTube'dan bulur ve bilgisayarında çalar.</div></div></div>
+        <div class="cmd"><span class="emo">📲</span><div><div class="say">Bu notları Telegram'a gönder</div><div class="do">Notunu ya da mesajını telefonuna Telegram'dan yollar.</div></div></div>
+      </div>
+    </div>
+
+    <!-- HESAP & BİLGİ -->
+    <div class="tab-panel" id="t-info">
+      <div class="cmd-grid">
+        <div class="cmd"><span class="emo">🧮</span><div><div class="say">247 çarpı 18 kaç eder?</div><div class="do">Matematik işlemlerini anında sesli olarak çözer.</div></div></div>
+        <div class="cmd"><span class="emo">🌦️</span><div><div class="say">Bugün İstanbul'da hava nasıl?</div><div class="do">12 Türk şehri için güncel hava durumunu söyler.</div></div></div>
+        <div class="cmd"><span class="emo">🕐</span><div><div class="say">Saat kaç, teslime kaç gün var?</div><div class="do">Tarih ve saati anında bildirir.</div></div></div>
+        <div class="cmd"><span class="emo">😊</span><div><div class="say">Bugün verimliydim, moralim iyi</div><div class="do">Ruh halini kaydeder, zamanla geçmişini ve grafiğini tutar.</div></div></div>
+      </div>
+    </div>
+
+    <!-- MOLA -->
+    <div class="tab-panel" id="t-fun">
+      <div class="cmd-grid">
+        <div class="cmd"><span class="emo">🎮</span><div><div class="say">Molada benimle bir oyun oyna</div><div class="do">Sesli kelime ve bilgi oyunlarıyla zihnini dinlendirir.</div></div></div>
+        <div class="cmd"><span class="emo">🎲</span><div><div class="say">Zar at</div><div class="do">Rastgele zar/sayı — karar ver ya da oyunlara eşlik et.</div></div></div>
+        <div class="cmd"><span class="emo">😂</span><div><div class="say">Bana bir şaka yap</div><div class="do">Kısa bir espriyle stres molası verir.</div></div></div>
+        <div class="cmd"><span class="emo">😮</span><div><div class="say">Duygulu yüzüyle eşlik eder</div><div class="do">Konuşmana göre güler, şaşırır, göz kırpar — masanda canlı bir varlık.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IN THE BOX -->
+<section id="kutu" class="box-sec" style="border-top:none">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Kutuda Ne Var</div>
+      <h2>Her şey hazır, sadece prizini tak</h2>
+    </div>
+    <div class="box-grid">
+      <div class="box-item reveal"><div class="bi">🤖</div><div class="t">İva cihazı</div><div class="d">Kurulu ve test edilmiş</div></div>
+      <div class="box-item reveal"><div class="bi">🔌</div><div class="t">USB-C kablo</div><div class="d">Güç & bağlantı</div></div>
+      <div class="box-item reveal"><div class="bi">📗</div><div class="t">Türkçe rehber</div><div class="d">Adım adım başlangıç</div></div>
+      <div class="box-item reveal"><div class="bi">🎁</div><div class="t">Hediye çıkartma</div><div class="d">Masanı kişiselleştir</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- STEPS -->
+<section>
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Kurulum</div>
+      <h2>2 dakikada kullanmaya başla</h2>
+    </div>
+    <div class="flow">
+      <div class="step reveal"><div class="n">1</div><h3>Fişe tak</h3><p>USB-C ile güce bağla, İva uyansın.</p></div>
+      <div class="step reveal"><div class="n">2</div><h3>Wi-Fi'ye bağla</h3><p>Telefondan tek seferlik ağ seçimi, o kadar.</p></div>
+      <div class="step reveal"><div class="n">3</div><h3>Konuşmaya başla</h3><p>"İva" de, ilk notunu almaya hazır.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- MASAÜSTÜ UYGULAMASI -->
+<section id="uygulama" class="box-sec">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Masaüstü Uygulaması</div>
+      <h2>Gelişmiş özellikleri bilgisayarından aç</h2>
+      <p>İva kutudan çıkar çıkmaz konuşur. Not alma, hatırlatıcı, müzik ve oyunlar için
+         ücretsiz masaüstü uygulamasını kurman yeterli.</p>
+    </div>
+
+    <div class="app-grid">
+      <div class="app-shot reveal">
+        <img src="uygulama.png" alt="İva Kontrol Paneli — durum ekranı" loading="lazy">
+      </div>
+
+      <div class="app-info reveal">
+        <ul class="ticks">
+          <li>Anahtarlarını tek ekrandan gir, dosya düzenleme yok</li>
+          <li>İva'nın bağlantı durumunu anlık gör</li>
+          <li>Telegram bağlantını tek tuşla test et</li>
+          <li>İva'nın seni nasıl tanıdığını düzenle</li>
+        </ul>
+
+        <a class="btn primary dl"
+           href="https://github.com/Talha-Dogan/iva-app/releases/latest/download/Iva-Windows.zip">
+          <span>⬇ Windows için indir</span>
+          <small>Iva-Windows.zip · 25 MB · Windows 10/11</small>
+        </a>
+
+        <div class="dl-note">
+          <b>Nasıl kurulur:</b> İndirdiğin ZIP dosyasına sağ tıkla →
+          <b>Tümünü ayıkla</b>, sonra çıkan klasördeki <b>Iva.exe</b>'yi çalıştır.
+          Windows tanımadığı programlar için bir uyarı gösterirse
+          <b>Ek bilgi</b> → <b>Yine de çalıştır</b> ile devam edebilirsin.
+        </div>
+
+        <div class="microtrust">✓ Ücretsiz · ✓ Kurulum gerektirmez · ✓ Verilerin bilgisayarında kalır</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="paketler" class="box-sec">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Paketler</div>
+      <h2>Sana uygun olanı seç</h2>
+      <p>Tüm paketlerde ücretsiz kargo, 14 gün iade ve 1 yıl garanti.</p>
+    </div>
+    <div class="plans">
+      <div class="plan reveal">
+        <h3>Kendin Yap Kiti</h3>
+        <div class="sub">Elektronikle uğraşmayı sevenler için parça seti + rehber.</div>
+        <div class="p">₺899 <small>KDV dahil</small></div>
+        <ul>
+          <li>Tüm parçalar (kart, mikrofon, hoparlör, ekran)</li>
+          <li>Türkçe montaj & kurulum rehberi</li>
+          <li>Açık kaynak yazılıma erişim</li>
+          <li>Topluluk desteği</li>
+        </ul>
+        <a class="buy" href="#" data-plan="Kendin Yap Kiti (₺899)">WhatsApp'tan Sipariş Ver</a>
+      </div>
+      <div class="plan pop reveal">
+        <div class="ptag">★ EN POPÜLER</div>
+        <h3>Kur & Kullan</h3>
+        <div class="sub">Kurulu, test edilmiş, kutudan çıkınca çalışan tam cihaz.</div>
+        <div class="p">₺1.499 <small>KDV dahil</small></div>
+        <ul>
+          <li>Monte edilmiş & çalışır İva</li>
+          <li>Türkçe sesli asistan hazır</li>
+          <li>Not, görev, hatırlatma, Pomodoro — hepsi açık</li>
+          <li>Öncelikli WhatsApp desteği</li>
+        </ul>
+        <a class="buy" href="#" data-plan="Kur & Kullan (₺1.499)">WhatsApp'tan Hemen Al</a>
+      </div>
+      <div class="plan reveal">
+        <h3>Gizlilik / Pro</h3>
+        <div class="sub">Kendi özel sunucusuyla, verisi tamamen sende kalan sürüm.</div>
+        <div class="p">₺2.199 <small>KDV dahil</small></div>
+        <ul>
+          <li>Kur & Kullan'daki her şey</li>
+          <li>Kendi sunucu kurulumu (Docker)</li>
+          <li>Bulutsuz, tam gizli çalışma</li>
+          <li>Uzaktan kurulum yardımı</li>
+        </ul>
+        <a class="buy" href="#" data-plan="Gizlilik / Pro (₺2.199)">WhatsApp'tan Sipariş Ver</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="yorumlar">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Yorumlar</div>
+      <h2>İva'yı masasına koyanlar ne diyor?</h2>
+    </div>
+    <div class="tsts">
+      <div class="tst reveal"><div class="stars" style="color:var(--gold)">★★★★★</div>
+        <p>"Derste hoca anlatırken 'İva not al' diyorum. Artık yazmakla uğraşmıyor, sadece dinliyorum; notlar sonra telefonuma düşüyor."</p>
+        <div class="who"><div class="av">EK</div><div><b>Elif K.</b><span>Üniversite öğrencisi · İstanbul</span></div></div></div>
+      <div class="tst reveal"><div class="stars" style="color:var(--gold)">★★★★★</div>
+        <p>"Toplantı notlarımı ve teslim tarihlerimi sesle giriyorum. Pomodoro'yu da o yönetiyor; günüm gerçekten daha derli toplu."</p>
+        <div class="who"><div class="av">MA</div><div><b>Mert A.</b><span>Yazılım geliştirici · Ankara</span></div></div></div>
+      <div class="tst reveal"><div class="stars" style="color:var(--gold)">★★★★★</div>
+        <p>"Verilerimin kendi bilgisayarımda kalması benim için önemliydi. Pro paketle notlarım buluta gitmiyor, içim rahat."</p>
+        <div class="who"><div class="av">SD</div><div><b>Seda D.</b><span>Mühendis · İzmir</span></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- GUARANTEE -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="guar reveal">
+      <div class="seal">🛡️</div>
+      <div>
+        <h3>14 gün koşulsuz iade garantisi</h3>
+        <p>İva iş akışına oturmazsa paranı geri al. 14 gün içinde iade et, ücretini eksiksiz iade edelim. Ayrıca cihaz 1 yıl garantilidir.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="sss" class="box-sec">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Sık Sorulan Sorular</div>
+      <h2>Aklındakiler</h2>
+    </div>
+    <div class="faq reveal">
+      <details><summary>Notları nasıl alıyorum, sonra nereye gidiyor?</summary><p>"İva, not al…" deyip konuşman yeterli. Notların cihazda saklanır; istersen tek komutla Telegram üzerinden telefonuna gönderir.</p></details>
+      <details><summary>Kullanmak için teknik bilgi gerekiyor mu?</summary><p>Hayır. "Kur & Kullan" ve "Pro" paketleri kurulu gelir; fişe takıp Wi-Fi'ye bağlaman yeterli. "Kendin Yap Kiti" ise adım adım Türkçe rehberle gelir.</p></details>
+      <details><summary>Verilerim gizli kalıyor mu?</summary><p>"Pro" pakette İva tamamen kendi sunucunda çalışır; notların ve verilerin buluta gitmez, yerel ağında kalır.</p></details>
+      <details><summary>Gerçekten Türkçe mi anlıyor?</summary><p>Evet, baştan sona Türkçe: hem seni anlar hem de doğal Türkçe yanıt verir.</p></details>
+      <details><summary>Uyandırma kelimesini değiştirebilir miyim?</summary><p>Evet. Uyandırma kelimesi artık tamamen özelleştirilebilir — cihazı yeniden programlamadan, birkaç tıkla istediğin ismi atayabilirsin.</p></details>
+      <details><summary>Kargo ne kadar sürer?</summary><p>Siparişler 1–3 iş günü içinde kargolanır, Türkiye geneli ücretsizdir. <em>(Süreleri kendine göre güncelle.)</em></p></details>
+      <details><summary>İş akışıma uymazsa iade edebilir miyim?</summary><p>Elbette. 14 gün içinde koşulsuz iade hakkın var; ücretini tamamen geri alırsın.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section>
+  <div class="wrap">
+    <div class="cta-box reveal">
+      <h2>Notların, derslerin ve günün kontrol altında</h2>
+      <p>Bugün sipariş verene özel %20 indirim ve ücretsiz kargo. Stoklarla sınırlı.</p>
+      <div class="btns" style="justify-content:center">
+        <a class="btn primary" href="#" data-plan="Kur & Kullan (₺1.499)">🛒 WhatsApp'tan Sipariş Ver — ₺1.499</a>
+      </div>
+      <div class="microtrust">✓ 14 gün iade · ✓ 1 yıl garanti · ✓ Güvenli ödeme</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span> İva</div>
+    <div>© 2026 İva · Türkiye'de tasarlandı 🇹🇷 · <a href="#" style="color:var(--accent)">İletişim</a></div>
+  </div>
+</footer>
+
+<div class="sticky-buy">
+  <div class="sp">₺1.499 <small>Kur & Kullan</small></div>
+  <a href="#" data-plan="Kur & Kullan (₺1.499)">Hemen Al 🛒</a>
+</div>
+
+<script>
+  document.querySelectorAll('.tab-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    const t=btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b===btn));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id===t));
+  }));
+
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.12});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(i%3)*70+'ms';io.observe(el);});
+
+  // === WhatsApp sipariş ayarı =====================================
+  // Numaranı ülke koduyla, + ve boşluk OLMADAN yaz. Örn: 0555 123 45 67 -> "905551234567"
+  const WHATSAPP_NUMARA = "905511310875";
+  // ================================================================
+  document.querySelectorAll('[data-plan]').forEach(b=>b.addEventListener('click',e=>{
+    e.preventDefault();
+    const paket=b.dataset.plan;
+    const mesaj=`Merhaba! İva sipariş etmek istiyorum.%0APaket: ${encodeURIComponent(paket)}%0AAd Soyad: %0AAdres: `;
+    window.open(`https://wa.me/${WHATSAPP_NUMARA}?text=${mesaj}`,'_blank');
+  }));
+</script>
+</body>
+</html>
