@@ -1,0 +1,9 @@
+# Kaynak 3B dosyalari repoda tutulmuyor; siteye GLB surumleri gidiyor.
+*.stl
+*.obj
+*.3mf
+
+# Isletim sistemi artiklari
+Thumbs.db
+desktop.ini
+.DS_Store

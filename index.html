@@ -11,7 +11,7 @@
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23080b11'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%234be3b4'/%3E%3C/svg%3E">
 <link rel="modulepreload" href="vendor/model-viewer.min.js">
-<link rel="preload" href="models/iva-closed.glb" as="fetch" type="model/gltf-binary" crossorigin>
+<link rel="preload" href="models/v2-closed.glb" as="fetch" type="model/gltf-binary" crossorigin>
 <style>
   :root{
     --bg:#080b11; --bg2:#0d1119; --panel:#131926; --panel2:#1a2233;
@@ -409,7 +409,7 @@
 
       <div class="hero-stage rise d6">
         <model-viewer id="mvHero"
-          src="models/iva-closed.glb"
+          src="models/v2-closed.glb"
           alt="İva masaüstü asistanı — 3B model"
           camera-orbit="-26deg 76deg auto"
           field-of-view="30deg"
@@ -521,7 +521,7 @@
         <div class="exp-loading" id="expLoading"><div class="spinner"></div></div>
 
         <model-viewer id="mvMain"
-          src="models/iva-closed.glb"
+          src="models/v2-closed.glb"
           alt="İva 3B ürün görünümü"
           camera-orbit="-26deg 74deg auto"
           min-camera-orbit="auto auto 0.25m" max-camera-orbit="auto auto 3m"
@@ -540,8 +540,9 @@
         <div class="sub">Bir parçaya tıkla, modelde nerede olduğunu göster.</div>
         <ol id="partsOl"></ol>
         <div class="parts-note">
-          Görseldeki renkler parçaları ayırt etmek için kullanıldı; nihai üründe
-          gövde tek renk olacak. Donanım listesi prototip aşamasında değişebilir.
+          Model, prototipin güncel 3B tasarımından alındı. Renkler parçaları
+          ayırt etmek için verildi; nihai üründe gövde tek renk olacak.
+          Parça isimleri ve donanım listesi prototip sürecinde değişebilir.
         </div>
       </div>
     </div>
@@ -981,22 +982,27 @@
   // pos/normal are in the exploded model's own coordinate space (metres).
   // orbit is the angle we swing the camera to when the part is selected;
   // the camera target moves to `pos` so the part ends up centred.
+  // Positions come straight out of the exploded STL. The v2 model carries no
+  // part metadata, so these names describe what is visible — Talha should
+  // correct them against the real bill of materials.
   var PARTS = [
-    { id:'govde',   name:'Gövde',           desc:'PLA baskı dış kasa, havalandırma ızgarası', color:'#dde2e4',
-      pos:'0.07m -0.06m -0.32m', normal:'0m 0m -1m', orbit:'150deg 68deg 0.9m'},
-    { id:'kapak',   name:'Üst kapak',       desc:'Hoparlör ızgarası ve dokunmatik buton',     color:'#61676a',
-      pos:'0.09m 0.21m 0.08m',   normal:'0m 1m 0m',  orbit:'26deg 40deg 0.5m' },
-    { id:'oled',    name:'1.3" OLED ekran', desc:'Yüz ifadeleri ve durum bilgisi',            color:'#33387b',
-      pos:'0.07m -0.06m 0.44m',  normal:'0m 0m 1m',  orbit:'-8deg 74deg 0.75m' },
-    { id:'kart',    name:'ESP32-S3 kartı',  desc:'Ana işlemci, Wi-Fi ve ses işleme',          color:'#009fd7',
-      pos:'0.08m -0.15m 0.07m',  normal:'0m -1m 0m', orbit:'20deg 130deg 0.45m' },
-    { id:'hoparlor',name:'Hoparlör',        desc:'Sesli yanıt ve bildirim sesleri',           color:'#f969a4',
-      pos:'0.30m 0.07m 0.23m',   normal:'0m 1m 0m',  orbit:'62deg 58deg 0.4m' },
-    { id:'mikrofon',name:'Mikrofon kartı',  desc:'Uyandırma kelimesini sürekli dinler',       color:'#cd7054',
-      pos:'-0.12m 0.07m 0.11m',  normal:'0m 1m 0m',  orbit:'-18deg 56deg 0.4m' }
+    { id:'govde',   name:'Gövde',           desc:'Dış kasa ve havalandırma ızgarası', color:'#dde2e4',
+      pos:'0.002m -0.004m -0.329m', normal:'0m 0m -1m', orbit:'-58deg 72deg 1.05m' },
+    { id:'kart',    name:'İç modül',        desc:'Gövdeye oturan iç taşıyıcı',        color:'#009fd7',
+      pos:'0.002m 0.002m -0.178m',  normal:'0m 1m 0m',  orbit:'-68deg 68deg 0.8m' },
+    { id:'buton',   name:'Hoparlör',        desc:'Sesli yanıt ve bildirim sesleri',   color:'#cd7054',
+      pos:'0.002m 0.125m -0.146m',  normal:'0m 1m 0m',  orbit:'-62deg 44deg 0.8m' },
+    { id:'ekran',   name:'Elektronik kart', desc:'Ana işlemci, Wi-Fi ve ses işleme',  color:'#2b2e31',
+      pos:'0.047m -0.098m -0.092m', normal:'0m -1m 0m', orbit:'-58deg 92deg 0.75m' },
+    { id:'hoparlor',name:'İç braket',       desc:'Kartı ve hoparlörü sabitler',       color:'#f969a4',
+      pos:'-0.001m -0.091m 0.149m', normal:'0m -1m 0m', orbit:'-66deg 88deg 0.72m' },
+    { id:'yan',     name:'Yan modül',       desc:'Mikrofon ve bağlantı açıklıkları',  color:'#8b7bf7',
+      pos:'-0.2m 0.007m 0m',        normal:'-1m 0m 0m', orbit:'-100deg 74deg 0.75m' },
+    { id:'taban',   name:'Ön çerçeve',      desc:'Ekran çerçevesi ve ön kapak',       color:'#61676a',
+      pos:'0.002m 0.012m 0.371m',   normal:'0m 0m 1m',  orbit:'-70deg 74deg 1.0m' }
   ];
   var ORBIT_CLOSED = '-26deg 74deg auto';
-  var ORBIT_OPEN   = '30deg 72deg auto';
+  var ORBIT_OPEN   = '-72deg 76deg auto';
 
   var mv       = document.getElementById('mvMain');
   var loading  = document.getElementById('expLoading');
@@ -1077,7 +1083,7 @@
     mv.cameraTarget = 'auto auto auto';
     // NOTE: model-viewer re-frames the camera when `src` changes, so the orbit
     // must be applied *after* the load event — setting it here would be lost.
-    mv.src = open ? 'models/iva-open.glb' : 'models/iva-closed.glb';
+    mv.src = open ? 'models/v2-open.glb' : 'models/v2-closed.glb';
     if (open) { mv.removeAttribute('auto-rotate'); }
     else { mv.setAttribute('auto-rotate',''); }
     if (hint){

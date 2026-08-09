@@ -10,30 +10,25 @@ echo.
 where git >nul 2>&1
 if errorlevel 1 (
   echo [HATA] Git kurulu degil.
-  echo Once https://git-scm.com/download/win adresinden kurup tekrar dene.
+  echo https://git-scm.com/download/win adresinden kurup tekrar dene.
   echo.
   pause
   exit /b 1
 )
 
-rem Netlify'a ait eski ayar dosyasi; Vercel'de islevi yok.
-if exist "_headers" (
-  echo Eski Netlify dosyasi siliniyor: _headers
-  del "_headers"
-)
+if exist "_headers" del "_headers"
 
 if not exist ".git" (
   echo Git deposu baslatiliyor...
   git init -b main || goto :fail
   git remote add origin https://github.com/Talha-Dogan/iva-web-concept-.git || goto :fail
-  echo Uzak depo bilgisi aliniyor...
   git fetch origin main || goto :fail
-  rem Calisma klasorune dokunmadan gecmisi devral, boylece zorla push gerekmez.
   git reset --soft FETCH_HEAD || goto :fail
-) else (
-  git remote get-url origin >nul 2>&1
-  if errorlevel 1 git remote add origin https://github.com/Talha-Dogan/iva-web-concept-.git
 )
+
+rem Ham STL dosyalari 60 MB; siteye GLB surumleri gidiyor. Diskte kaliyorlar,
+rem sadece depodan cikariliyorlar.
+git rm --cached --ignore-unmatch -q "models/*.stl" >nul 2>&1
 
 echo.
 echo Gonderilecek degisiklikler:
@@ -49,7 +44,7 @@ if not errorlevel 1 (
   exit /b 0
 )
 
-git commit -m "Siteyi yenile: 3B urun gorunumu, kullanim senaryolari, kiosk bolumu, fiyatlandirma yerine Cok Yakinda" || goto :fail
+git commit -m "3B gorunum v2 modeline guncellendi" || goto :fail
 
 echo.
 echo GitHub'a gonderiliyor... (giris istenirse tarayicidan onayla)
@@ -57,8 +52,7 @@ git push -u origin main || goto :fail
 
 echo.
 echo ============================================
-echo   TAMAM. Vercel otomatik yayina alacak.
-echo   1-2 dakika sonra kontrol et:
+echo   TAMAM. Vercel 1-2 dakika icinde yayinlar:
 echo   https://iva-web-concept.vercel.app/
 echo ============================================
 echo.
