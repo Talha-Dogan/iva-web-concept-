@@ -121,6 +121,32 @@
   #mvHero{height:min(62svh,600px)}
   .mv-fallback{position:absolute;inset:0;display:grid;place-items:center;color:#fff;
     font-size:.86rem;text-align:center;padding:20px;opacity:.8}
+
+  /* İva'nın konuşma balonu: model kendi kendine konuşurken sözü burada görünür */
+  .hero-say{position:absolute;top:0;left:50%;translate:-50% 0;z-index:4;
+    width:min(430px,88%);opacity:0;transform:translateY(8px);pointer-events:none;
+    transition:opacity .3s var(--ease),transform .3s var(--ease)}
+  .hero-say[data-on]{opacity:1;transform:none}
+  .hero-say .bub{position:relative;background:#fff;color:var(--ink);border-radius:20px;
+    padding:14px 19px;font-size:.86rem;font-weight:800;line-height:1.45;text-align:center;
+    box-shadow:0 20px 44px -24px rgba(0,0,0,.65)}
+  .hero-say .bub::after{content:"";position:absolute;left:50%;bottom:-7px;translate:-50% 0;
+    width:18px;height:18px;background:#fff;rotate:45deg;border-radius:0 0 4px 0}
+  .hero-say .w{opacity:0}
+  .hero-say .w.on{opacity:1;transition:opacity .1s linear}
+
+  /* ekranı denemek için düğmeler */
+  .hero-acts{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;
+    margin-top:clamp(10px,1.5vw,18px)}
+  .hero-acts button{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;
+    border-radius:999px;border:2px solid var(--edge);background:transparent;color:inherit;
+    font-weight:900;font-size:.79rem;cursor:pointer;transition:.25s var(--ease)}
+  .hero-acts button:hover{background:#fff;color:var(--ink);border-color:#fff;
+    transform:translateY(-2px)}
+  .hero-acts button[data-on]{background:#fff;color:var(--ink);border-color:#fff}
+  .hero-hint{margin:10px 0 0;text-align:center;font-size:.7rem;font-weight:800;
+    letter-spacing:.03em;opacity:.72}
+  @media(max-width:560px){.hero-acts button{font-size:.74rem;padding:9px 14px}}
   .chip{display:inline-flex;align-items:center;gap:9px;padding:8px 17px;border-radius:999px;
     border:2px solid var(--edge);font-size:.78rem;font-weight:900;letter-spacing:.01em}
   .chip i{width:8px;height:8px;border-radius:50%;background:currentColor;font-style:normal;
@@ -248,16 +274,27 @@
   .parts .foot{margin-top:auto;padding-top:18px;font-size:.75rem;font-weight:700;opacity:.5;line-height:1.55}
 
   /* ══════════ FACES ══════════ */
-  .faces{display:flex;gap:14px;overflow-x:auto;padding:6px 0 20px;scrollbar-width:none}
+  .faces-row{display:flex;gap:16px;align-items:flex-start}
+  @media(max-width:640px){.faces-row{flex-direction:column}}
+  .face-now{flex:0 0 auto;display:grid;place-items:center;gap:9px;padding:13px;
+    border-radius:22px;background:var(--soft);border:2px solid var(--edge)}
+  .face-now canvas{display:block;width:128px;height:99px;border-radius:13px;background:#000}
+  .face-now .lbl{font-size:.6rem;font-weight:900;text-transform:lowercase;
+    letter-spacing:.11em;opacity:.72}
+  .faces{display:flex;gap:14px;overflow-x:auto;padding:6px 0 20px;scrollbar-width:none;min-width:0}
   .faces::-webkit-scrollbar{display:none}
   .face-card{flex:0 0 118px;height:118px;border-radius:22px;background:var(--soft);
-    border:2px solid var(--edge);display:grid;place-items:center;gap:0;transition:.3s var(--ease)}
+    border:2px solid var(--edge);display:grid;place-items:center;gap:0;transition:.3s var(--ease);
+    color:inherit;font:inherit;padding:0;cursor:pointer;-webkit-appearance:none;appearance:none}
   .face-card:nth-child(odd){rotate:-4deg}
   .face-card:nth-child(even){rotate:3deg}
-  .face-card:hover{rotate:0deg;background:#fff;transform:translateY(-5px)}
-  .face-card svg{width:62px;height:44px}
+  .face-card:hover,.face-card[aria-pressed="true"]{rotate:0deg;background:#fff;
+    transform:translateY(-5px)}
+  .face-card[aria-pressed="true"]{border-color:#fff;box-shadow:0 14px 28px -16px rgba(0,0,0,.55)}
+  .face-card svg{width:62px;height:48px}
   .face-card .lbl{font-size:.66rem;font-weight:900;text-transform:lowercase;opacity:.7;margin-top:6px}
-  .face-card:hover .lbl,.face-card:hover svg{color:var(--ink)}
+  .face-card:hover .lbl,.face-card:hover svg,
+  .face-card[aria-pressed="true"] .lbl,.face-card[aria-pressed="true"] svg{color:var(--ink)}
 
   /* ══════════ KOMUT SEKMELERİ ══════════ */
   .tabs{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:26px}
@@ -414,11 +451,24 @@
         camera-orbit="-26deg 76deg auto"
         field-of-view="30deg"
         camera-controls disable-zoom disable-pan interaction-prompt="none"
+        min-camera-orbit="auto 52deg auto" max-camera-orbit="auto 104deg auto"
         environment-image="neutral" shadow-intensity="0.85" shadow-softness="1"
         exposure="1.2" loading="eager">
         <div slot="poster" class="mv-fallback">iva yükleniyor…</div>
       </model-viewer>
+      <div class="hero-say" id="heroSay" aria-live="polite"><div class="bub"><span class="txt"></span></div></div>
     </div>
+
+    <div class="hero-acts" id="heroActs" role="group" aria-label="İva'yı dene">
+      <button type="button" data-scene="ingilizce">🗣️ ingilizce öğret</button>
+      <button type="button" data-scene="pomodoro">⏱️ odak başlat</button>
+      <button type="button" data-scene="saka">😄 şaka yap</button>
+      <button type="button" data-scene="zar">🎲 zar at</button>
+      <button type="button" data-scene="cark">🎡 çark çevir</button>
+      <button type="button" data-scene="ucbilgi">🧠 3 bilgi</button>
+    </div>
+    <p class="hero-hint">modeli sürükle — sallarsan başı döner, ters çevirirsen hoşuna gitmez ·
+      ekran, geliştirilmekte olan cihazın tarayıcıdaki simülasyonu</p>
 
     <div class="hero-foot">
       <div>
@@ -593,7 +643,7 @@
     <div class="copy rv" style="margin-top:clamp(30px,4vw,52px)">
       <p class="say">Kapalı kutu değil.<br>Ne olduğunu görebilirsin.</p>
       <p class="note">İva, ESP32-S3 tabanlı açık bir donanım mimarisi üzerine kuruluyor: mikrofon dizisi,
-        hoparlör ve küçük bir OLED ekran.</p>
+        hoparlör ve 1.69 inçlik küçük bir ekran.</p>
       <p class="note">Modeli sürükleyerek çevir, "parçalar" görünümüne geçip kutunun içinde ne olduğunu
         tek tek incele.</p>
     </div>
@@ -622,6 +672,8 @@
           <div class="cmd"><span class="emo">🍅</span><div><div class="say2">Pomodoro başlat</div><div class="do">25 dakikalık odak sayacı başlatır, molanı hatırlatır.</div></div></div>
           <div class="cmd"><span class="emo">📔</span><div><div class="say2">Bugünkü çalışmalarımı günlüğüme yaz</div><div class="do">Günün özetini tutar, ne yaptığını takip edersin.</div></div></div>
           <div class="cmd"><span class="emo">🔥</span><div><div class="say2">Bugün 2 saat çalıştım, alışkanlığa ekle</div><div class="do">Çalışma serilerini takip eder, motive tutar.</div></div></div>
+          <div class="cmd"><span class="emo">📅</span><div><div class="say2">Cumartesi 14.00'e diş randevusu ekle</div><div class="do">Takvimine etkinlik ekler, listeler, gerekirse iptal eder.</div></div></div>
+          <div class="cmd"><span class="emo">🗒️</span><div><div class="say2">Günün özetini geç</div><div class="do">Akşam notlarını, görevlerini ve serilerini toplayıp özetler.</div></div></div>
         </div>
       </div>
 
@@ -640,6 +692,9 @@
           <div class="cmd"><span class="emo">🔎</span><div><div class="say2">Web'de kaynak makale ara</div><div class="do">Senin için arama yapar, sonucu açar.</div></div></div>
           <div class="cmd"><span class="emo">▶️</span><div><div class="say2">Odaklanmak için bir müzik aç</div><div class="do">Bulur ve bilgisayarında çalar.</div></div></div>
           <div class="cmd"><span class="emo">📲</span><div><div class="say2">Bu notları telefonuma gönder</div><div class="do">Notunu ya da mesajını telefonuna iletir.</div></div></div>
+          <div class="cmd"><span class="emo">✉️</span><div><div class="say2">Ayşe'ye mail at: dosya yarın hazır</div><div class="do">Kayıtlı kişilere e-posta yazıp gönderir.</div></div></div>
+          <div class="cmd"><span class="emo">🎧</span><div><div class="say2">Spotify'da çalışma listemi aç</div><div class="do">Şarkıyı bulur, çalar, sesi sen söyledikçe ayarlar.</div></div></div>
+          <div class="cmd"><span class="emo">🖥️</span><div><div class="say2">Kod editörünü aç</div><div class="do">Bilgisayarındaki uygulamayı senin için başlatır.</div></div></div>
         </div>
       </div>
 
@@ -654,8 +709,12 @@
 
       <div class="tab-panel" id="t-fun">
         <div class="cmds">
-          <div class="cmd"><span class="emo">🎮</span><div><div class="say2">Molada benimle bir oyun oyna</div><div class="do">Sesli kelime ve bilgi oyunlarıyla zihnini dinlendirir.</div></div></div>
-          <div class="cmd"><span class="emo">🎲</span><div><div class="say2">Zar at</div><div class="do">Rastgele zar ya da sayı — karar vermene yardım eder.</div></div></div>
+          <div class="cmd"><span class="emo">🎡</span><div><div class="say2">Çarkı çevir</div><div class="do">Bilim, Sanat, Spor, Tarih, Coğrafya, Eğlence — ekranda döner, bir kategoride durur, oradan soru sorar.</div></div></div>
+          <div class="cmd"><span class="emo">🧠</span><div><div class="say2">Üç bilgi ver, biri yanlış olsun</div><div class="do">Üç bilgiyi sırayla okur, yanlış olanı bulmanı ister; ekranda tik ve çarpı çıkar.</div></div></div>
+          <div class="cmd"><span class="emo">🏆</span><div><div class="say2">Skorlu quiz başlat</div><div class="do">Soru sorar, skoru tutar, doğru-yanlış sesiyle geri bildirim verir.</div></div></div>
+          <div class="cmd"><span class="emo">🎵</span><div><div class="say2">Şarkı tahmin oyunu oyna</div><div class="do">Bir şarkının ortasından kısa bir parça çalar, hangisi olduğunu sorar.</div></div></div>
+          <div class="cmd"><span class="emo">❓</span><div><div class="say2">Bana bilmece sor</div><div class="do">Bilmece, 20 soru, tabu, kelime zinciri, şehir-isim-hayvan, hikâye zinciri.</div></div></div>
+          <div class="cmd"><span class="emo">🎲</span><div><div class="say2">Zar at, yazı tura at</div><div class="do">Zar ekranda döner ve bir sayıda durur; para yazı-tura arasında döner.</div></div></div>
           <div class="cmd"><span class="emo">😂</span><div><div class="say2">Bana bir şaka yap</div><div class="do">Kısa bir espriyle stres molası verir.</div></div></div>
           <div class="cmd"><span class="emo">😮</span><div><div class="say2">Duygulu yüzüyle eşlik eder</div><div class="do">Konuşmana göre güler, şaşırır, göz kırpar.</div></div></div>
         </div>
@@ -664,9 +723,18 @@
 
     <div class="rv" style="margin-top:clamp(34px,4vw,52px)">
       <p class="say" style="max-width:32ch">Konuştuğun şeye göre yüzü değişir.</p>
-      <div class="faces" id="faces" aria-hidden="true"></div>
-      <p class="note">Küçük OLED ekranındaki yüz, konuşmanın gidişatına göre gülüyor, şaşırıyor,
-        göz kırpıyor. Cihazla konuşmak bir menüyle uğraşmaktan çok, birine seslenmeye benziyor.</p>
+      <div class="faces-row">
+        <div class="face-now">
+          <canvas id="faceNow" width="256" height="198" aria-hidden="true"></canvas>
+          <div class="lbl">cihazın ekranı</div>
+        </div>
+        <div class="faces" id="faces"></div>
+      </div>
+      <p class="note">Küçük ekranındaki yüz, konuşmanın gidişatına göre gülüyor, şaşırıyor,
+        göz kırpıyor. Oyun oynarken ekran zarı, çarkı, doğru-yanlış işaretlerini de gösteriyor;
+        cihazla konuşmak bir menüyle uğraşmaktan çok, birine seslenmeye benziyor.</p>
+      <p class="note">Bir ifadeye dokun: hem yandaki ekran hem de yukarıdaki 3B model o ifadeye
+        geçsin. Aynı ifadeye tekrar dokunursan otomatik akışa döner.</p>
     </div>
   </div>
 </section>
@@ -877,6 +945,8 @@
   ModelViewerElement.dracoDecoderLocation = new URL('vendor/draco/', document.baseURI).href;
 </script>
 
+<script src="js/iva-screen.js"></script>
+
 <script>
 (function(){
   "use strict";
@@ -944,223 +1014,77 @@
     sync();
   })();
 
-  /* ---------- OLED yüz ifadeleri ---------- */
+  /* ---------- iki ayrı ekran ----------
+     The hero screen is the one you can play with; the exploded-view model and the
+     expression-card preview share a second, quieter one. Keeping them apart is
+     what stops a game running up in the hero from showing on the product model. */
+  var Iva = window.IvaScreen;
+  var heroStage = Iva ? Iva.createStage() : null;
+  var autoStage = Iva ? Iva.createStage() : null;
+
+  /* ---------- hero: konuşan, oynanabilir ekran ---------- */
   (function(){
-    var host = document.getElementById('faces');
-    if (!host) return;
-    // [sol göz, sağ göz, ağız yolu] — cihazın küçük ekranındaki ifadeler
-    var FACES = [
-      ['mutlu',   'M14 16a6 6 0 0 1 12 0',      'M36 16a6 6 0 0 1 12 0',      'M22 30q9 8 18 0'],
-      ['şaşkın',  null,                          null,                         'M27 30a4 4 0 1 0 8 0a4 4 0 1 0-8 0'],
-      ['göz kırp','M14 16a6 6 0 0 1 12 0',      'M36 19h12',                  'M23 30q8 6 16 0'],
-      ['sakin',   'M14 19h12',                  'M36 19h12',                  'M24 30h14'],
-      ['düşünen', 'M14 16a6 6 0 0 1 12 0',      'M36 16a6 6 0 0 1 12 0',      'M24 31q7-5 14 0'],
-      ['uykulu',  'M14 20q6-5 12 0',            'M36 20q6-5 12 0',            'M25 30q6 4 12 0']
-    ];
-    FACES.forEach(function(f){
-      var d = document.createElement('div');
-      d.className = 'face-card';
-      var eyes = f[1] === null
-        ? '<circle cx="20" cy="18" r="5"/><circle cx="42" cy="18" r="5"/>'
-        : '<path d="' + f[1] + '" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>' +
-          '<path d="' + f[2] + '" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>';
-      d.innerHTML =
-        '<svg viewBox="0 0 62 44" fill="currentColor" aria-hidden="true">' + eyes +
-        '<path d="' + f[3] + '" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>' +
-        '<div class="lbl">' + f[0] + '</div>';
-      host.appendChild(d);
+    var hero = document.getElementById('mvHero');
+    if (!Iva || !hero) return;
+    heroStage.bubble(document.getElementById('heroSay'));
+    function ready(){ heroStage.attach(hero); }
+    hero.addEventListener('load', ready);
+    if (hero.loaded) ready();                 // a cached model can beat the listener
+    Iva.gestures(hero, heroStage);
+
+    var acts = document.getElementById('heroActs');
+    if (!acts) return;
+    function clearActs(){
+      acts.querySelectorAll('button').forEach(function(x){ x.removeAttribute('data-on'); });
+    }
+    heroStage.onIdle(clearActs);
+    acts.addEventListener('click', function(e){
+      var b = e.target.closest ? e.target.closest('button[data-scene]') : null;
+      if (!b) return;
+      clearActs();
+      b.setAttribute('data-on', '');
+      // swing the face back to the front, or the show plays out of sight
+      hero.cameraOrbit = '-26deg 76deg auto';
+      if (!heroStage.play(b.dataset.scene)) clearActs();
     });
   })();
 
-  /* ---------- 3B modelin ekranındaki canlı yüz ----------
-     The GLB models carry an extra "iva-screen" surface baked onto the door's
-     recessed pocket by tools/add-screen.mjs — it is the only geometry in them
-     with UVs. Its material is black with a white emissive factor, so painting a
-     canvas onto the emissive channel makes the panel read as a black OLED with a
-     glowing face on it. One master canvas is blitted into each model's texture. */
-  var FaceScreen = (function(){
-    var W = 512, H = 396;                    // 1.293 — the baked screen's aspect
-    var CX = W / 2;
-    var EYE_Y = Math.round(H * 0.43), EYE_DX = Math.round(W * 0.17);
-    var MOUTH_Y = Math.round(H * 0.73);
-    var INK = '#e4f7ff', GLOW = 'rgba(96,214,255,.72)';
-
-    // Every feature is a round-capped stroke along a quadratic curve, so one
-    // vector of numbers describes a whole expression and expressions can simply
-    // be interpolated. halfLen 0 collapses the stroke to its cap — a circle of
-    // `thick` — and bulge bends it (positive bends downward).
-    //        [ lHalf lThick lBulge  rHalf rThick rBulge  mHalf mThick mBulge  gazeX gazeY ]
-    var FACES = {
-      sakin:     [  0,   84,     0,     0,    84,     0,     52,   20,    26,     0,    0],
-      mutlu:     [ 44,   24,   -32,    44,    24,   -32,     70,   24,    46,     0,   -2],
-      saskin:    [  0,  104,     0,     0,   104,     0,      4,   52,     0,     0,   -4],
-      goz_kirp:  [ 42,   22,   -28,    44,    16,     0,     60,   22,    32,     0,   -2],
-      dusunen:   [  0,   78,     0,     0,    78,     0,     26,   20,    14,   -26,  -14],
-      uykulu:    [ 46,   20,   -14,    46,    20,   -14,     20,   18,    12,     0,   12],
-      konusuyor: [  0,   84,     0,     0,    84,     0,     20,   22,     0,     0,    0],
-      dinliyor:  [  0,   78,     0,     0,    88,     0,     17,   14,     0,    10,   -2]
-    };
-    var BLINK = [46, 12, 0];                 // eye params at the bottom of a blink
-    var PLAY = [
-      ['sakin', 2400], ['konusuyor', 3400], ['mutlu', 2000], ['dinliyor', 2600],
-      ['saskin', 1500], ['goz_kirp', 1300], ['dusunen', 2500], ['uykulu', 2200]
-    ];
-    var MORPH = 420, TICK = 50;              // ms — 20fps keeps the OLED feel
-
-    var master = document.createElement('canvas');
-    master.width = W; master.height = H;
-    var g = master.getContext('2d');
-    var targets = [];
-    var raf = null, last = 0, t0 = null;
-    var step = 0, stepAt = 0, from = FACES.sakin, to = FACES.sakin;
-    var blinkAt = 0, blinkFor = -9999;
-    var mouth = 22, mouthTarget = 22, mouthAt = 0;
-    var sacX = 0, sacY = 0, sacAt = 0;
-
-    function lerp(a, b, k){ return a + (b - a) * k; }
-    function ease(k){ return k < 0.5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3) / 2; }
-    function rand(a, b){ return a + Math.random() * (b - a); }
-
-    function feature(cx, cy, half, thick, bulge){
-      if (thick <= 0.5) return;
-      g.lineWidth = thick;
-      g.beginPath();
-      if (half < 0.8){ g.moveTo(cx - 0.4, cy); g.lineTo(cx + 0.4, cy); }
-      else { g.moveTo(cx - half, cy); g.quadraticCurveTo(cx, cy + bulge * 2, cx + half, cy); }
-      g.stroke();
-    }
-
-    function draw(p){
-      g.fillStyle = '#000';
-      g.fillRect(0, 0, W, H);
-      g.strokeStyle = INK;
-      g.lineCap = 'round';
-      g.lineJoin = 'round';
-      var gx = p[9], gy = p[10];
-      for (var pass = 0; pass < 2; pass++){
-        g.shadowColor = pass === 0 ? GLOW : 'transparent';
-        g.shadowBlur  = pass === 0 ? 26 : 0;
-        feature(CX - EYE_DX + gx, EYE_Y + gy, p[0], p[1], p[2]);
-        feature(CX + EYE_DX + gx, EYE_Y + gy, p[3], p[4], p[5]);
-        feature(CX + gx * 0.4, MOUTH_Y + gy * 0.4, p[6], p[7], p[8]);
-      }
-    }
-
-    function frame(t){
-      raf = requestAnimationFrame(frame);
-      if (t0 === null){ t0 = t; stepAt = t; blinkAt = t + rand(1800, 3600); mouthAt = t; sacAt = t; }
-      if (t - last < TICK) return;
-      last = t;
-
-      if (t - stepAt > PLAY[step][1]){
-        stepAt = t;
-        from = FACES[PLAY[step][0]];
-        step = (step + 1) % PLAY.length;
-        to = FACES[PLAY[step][0]];
-      }
-      var k = ease(Math.min(1, (t - stepAt) / MORPH));
-      var p = [];
-      for (var i = 0; i < from.length; i++) p.push(lerp(from[i], to[i], k));
-
-      // Speaking: the mouth keeps jumping to a new opening, the way the device's
-      // own face engine drives it while it talks. The opening is always eased
-      // toward its target, so it also blends back out without snapping.
-      var open = p[7];
-      if (PLAY[step][0] === 'konusuyor'){
-        if (t - mouthAt > rand(90, 160)){ mouthAt = t; mouthTarget = [14, 26, 44, 66][Math.floor(Math.random() * 4)]; }
-        open = mouthTarget;
-      }
-      mouth += (open - mouth) * 0.42;
-      p[7] = mouth;
-
-      // blink, then idle drift so the face never sits perfectly still
-      if (t > blinkAt){ blinkFor = t; blinkAt = t + rand(2600, 6000); }
-      var since = t - blinkFor, b = 0;
-      if (since < 170) b = since < 70 ? since / 70 : 1 - (since - 70) / 100;
-      if (b > 0) for (var e = 0; e < 6; e++) p[e] = lerp(p[e], BLINK[e % 3], b);
-
-      if (t - sacAt > rand(1400, 3000)){ sacAt = t; sacX = rand(-7, 7); sacY = rand(-4, 4); }
-      var s = (t - t0) / 1000;
-      p[9]  += 6 * Math.sin(s * 0.45) + sacX;
-      p[10] += 4 * Math.sin(s * 0.31) + sacY;
-
-      draw(p);
-      paint();
-    }
-
-    function paint(){
-      for (var i = 0; i < targets.length; i++){
-        if (!targets[i].live || !targets[i].ctx) continue;
-        targets[i].ctx.drawImage(master, 0, 0);
-        targets[i].tex.source.update();
-      }
-    }
-
-    function live(){
-      for (var i = 0; i < targets.length; i++) if (targets[i].live) return true;
-      return false;
-    }
-    function play(){
-      if (reduce || raf || document.hidden || !live()) return;
-      last = 0; raf = requestAnimationFrame(frame);
-    }
-    function pause(){ if (raf){ cancelAnimationFrame(raf); raf = null; } }
-    // don't burn frames while both models are scrolled away or the tab is hidden
-    function resync(){ if (document.hidden || !live()) pause(); else play(); }
-
-    document.addEventListener('visibilitychange', resync);
-
-    function attach(mv){
-      var model = mv.model;
-      if (!model) return;
-      var mat = null;
-      for (var i = 0; i < model.materials.length; i++){
-        if (model.materials[i].name === 'iva-screen'){ mat = model.materials[i]; break; }
-      }
-      if (!mat) return;                       // a model without a baked screen
-      Promise.resolve(mat.ensureLoaded ? mat.ensureLoaded() : null).then(function(){
-        var tex = mv.createCanvasTexture();
-        var cv = tex.source.element;
-        cv.width = W; cv.height = H;
-        mat.setEmissiveFactor([1, 1, 1]);
-        mat.emissiveTexture.setTexture(tex);
-        // Canvas textures keep three.js's default flipY, while the baked UVs follow
-        // glTF's top-left origin — so flip V back, after setTexture has reapplied
-        // the slot's own (identity) transform.
-        if (tex.sampler && tex.sampler.setScale){
-          tex.sampler.setScale({ u: 1, v: -1 });
-          tex.sampler.setOffset({ u: 0, v: 1 });
-        }
-
-        var tg = null;
-        for (var j = 0; j < targets.length; j++) if (targets[j].mv === mv) tg = targets[j];
-        if (!tg){
-          tg = { mv: mv, live: !reduce };
-          targets.push(tg);
-          new IntersectionObserver(function(entries){
-            entries.forEach(function(e){ tg.live = e.isIntersecting; });
-            resync();
-          }, { threshold: 0 }).observe(mv);
-        }
-        tg.tex = tex;
-        tg.ctx = cv.getContext('2d');
-
-        // paint one frame straight away so the panel is never a blank black hole
-        if (!raf) draw(FACES.sakin);
-        tg.ctx.drawImage(master, 0, 0);
-        tex.source.update();
-        play();
-      })['catch'](function(){ /* the screen is decoration — never break the page */ });
-    }
-
-    return { attach: attach };
-  })();
-
+  /* ---------- OLED yüz ifadeleri: kartlar iki ekranı da sürer ---------- */
   (function(){
-    var hero = document.getElementById('mvHero');
-    if (!hero) return;
-    hero.addEventListener('load', function(){ FaceScreen.attach(hero); });
-    if (hero.loaded) FaceScreen.attach(hero);   // cached model can beat the listener
+    var host = document.getElementById('faces');
+    if (!Iva || !host) return;
+    // card art comes straight out of the expression table, so what a card shows is
+    // exactly what the device screen switches to
+    var CARDS = [
+      ['mutlu', 'mutlu'], ['saskin', 'şaşkın'], ['goz_kirp', 'göz kırp'],
+      ['sakin', 'sakin'], ['dusunen', 'düşünen'], ['uykulu', 'uykulu'],
+      ['konusuyor', 'konuşuyor'], ['dinliyor', 'dinliyor'], ['sinirli', 'sinirli']
+    ];
+    CARDS.forEach(function(c){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'face-card';
+      b.dataset.face = c[0];
+      b.setAttribute('aria-pressed', 'false');
+      b.innerHTML = Iva.svg(c[0]) + '<div class="lbl">' + c[1] + '</div>';
+      host.appendChild(b);
+    });
+
+    host.addEventListener('click', function(e){
+      var b = e.target.closest ? e.target.closest('.face-card') : null;
+      if (!b) return;
+      var on = b.getAttribute('aria-pressed') === 'true';
+      host.querySelectorAll('.face-card').forEach(function(x){
+        x.setAttribute('aria-pressed', 'false');
+      });
+      var pick = on ? null : b.dataset.face;    // same card again: back to auto
+      if (pick) b.setAttribute('aria-pressed', 'true');
+      autoStage.hold(pick);
+      heroStage.hold(pick);
+    });
+
+    var now = document.getElementById('faceNow');
+    if (now) autoStage.preview(now);
   })();
 
   /* ---------- hero: gentle sway ----------
@@ -1301,7 +1225,7 @@
 
   mv.addEventListener('load', function(){
     loading.classList.add('gone');
-    FaceScreen.attach(mv);
+    if (autoStage) autoStage.attach(mv);
     var p = pendingFocus; pendingFocus = null;
     if (isOpen) addHotspots();
     // two frames: let model-viewer finish its own auto-framing first
