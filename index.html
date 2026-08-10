@@ -15,7 +15,8 @@
 <link rel="preload" href="vendor/fonts/unbounded-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="vendor/fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="modulepreload" href="vendor/model-viewer.min.js">
-<link rel="preload" href="models/v2-closed.glb" as="fetch" type="model/gltf-binary" crossorigin>
+<!-- ?s2 busts the immutable cache after tools/add-screen.mjs re-bakes the models -->
+<link rel="preload" href="models/v2-closed.glb?s2" as="fetch" type="model/gltf-binary" crossorigin>
 <style>
   /* ══════════ FONTS (self-hosted, CSP font-src 'self') ══════════ */
   @font-face{font-family:"Unbounded";font-style:normal;font-weight:400 700;font-display:swap;
@@ -408,7 +409,7 @@
   <div class="wrap">
     <div class="hero-stage">
       <model-viewer id="mvHero"
-        src="models/v2-closed.glb"
+        src="models/v2-closed.glb?s2"
         alt="İva masaüstü asistanı — 3B model"
         camera-orbit="-26deg 76deg auto"
         field-of-view="30deg"
@@ -565,7 +566,7 @@
         </div>
         <div class="exp-load" id="expLoading"><div class="spinner"></div></div>
         <model-viewer id="mvMain"
-          src="models/v2-closed.glb"
+          src="models/v2-closed.glb?s2"
           alt="İva 3B ürün görünümü"
           camera-orbit="-26deg 74deg 105%"
           min-camera-orbit="auto auto 0.25m" max-camera-orbit="auto auto 3m"
@@ -971,6 +972,197 @@
     });
   })();
 
+  /* ---------- 3B modelin ekranındaki canlı yüz ----------
+     The GLB models carry an extra "iva-screen" surface baked onto the door's
+     recessed pocket by tools/add-screen.mjs — it is the only geometry in them
+     with UVs. Its material is black with a white emissive factor, so painting a
+     canvas onto the emissive channel makes the panel read as a black OLED with a
+     glowing face on it. One master canvas is blitted into each model's texture. */
+  var FaceScreen = (function(){
+    var W = 512, H = 396;                    // 1.293 — the baked screen's aspect
+    var CX = W / 2;
+    var EYE_Y = Math.round(H * 0.43), EYE_DX = Math.round(W * 0.17);
+    var MOUTH_Y = Math.round(H * 0.73);
+    var INK = '#e4f7ff', GLOW = 'rgba(96,214,255,.72)';
+
+    // Every feature is a round-capped stroke along a quadratic curve, so one
+    // vector of numbers describes a whole expression and expressions can simply
+    // be interpolated. halfLen 0 collapses the stroke to its cap — a circle of
+    // `thick` — and bulge bends it (positive bends downward).
+    //        [ lHalf lThick lBulge  rHalf rThick rBulge  mHalf mThick mBulge  gazeX gazeY ]
+    var FACES = {
+      sakin:     [  0,   84,     0,     0,    84,     0,     52,   20,    26,     0,    0],
+      mutlu:     [ 44,   24,   -32,    44,    24,   -32,     70,   24,    46,     0,   -2],
+      saskin:    [  0,  104,     0,     0,   104,     0,      4,   52,     0,     0,   -4],
+      goz_kirp:  [ 42,   22,   -28,    44,    16,     0,     60,   22,    32,     0,   -2],
+      dusunen:   [  0,   78,     0,     0,    78,     0,     26,   20,    14,   -26,  -14],
+      uykulu:    [ 46,   20,   -14,    46,    20,   -14,     20,   18,    12,     0,   12],
+      konusuyor: [  0,   84,     0,     0,    84,     0,     20,   22,     0,     0,    0],
+      dinliyor:  [  0,   78,     0,     0,    88,     0,     17,   14,     0,    10,   -2]
+    };
+    var BLINK = [46, 12, 0];                 // eye params at the bottom of a blink
+    var PLAY = [
+      ['sakin', 2400], ['konusuyor', 3400], ['mutlu', 2000], ['dinliyor', 2600],
+      ['saskin', 1500], ['goz_kirp', 1300], ['dusunen', 2500], ['uykulu', 2200]
+    ];
+    var MORPH = 420, TICK = 50;              // ms — 20fps keeps the OLED feel
+
+    var master = document.createElement('canvas');
+    master.width = W; master.height = H;
+    var g = master.getContext('2d');
+    var targets = [];
+    var raf = null, last = 0, t0 = null;
+    var step = 0, stepAt = 0, from = FACES.sakin, to = FACES.sakin;
+    var blinkAt = 0, blinkFor = -9999;
+    var mouth = 22, mouthTarget = 22, mouthAt = 0;
+    var sacX = 0, sacY = 0, sacAt = 0;
+
+    function lerp(a, b, k){ return a + (b - a) * k; }
+    function ease(k){ return k < 0.5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3) / 2; }
+    function rand(a, b){ return a + Math.random() * (b - a); }
+
+    function feature(cx, cy, half, thick, bulge){
+      if (thick <= 0.5) return;
+      g.lineWidth = thick;
+      g.beginPath();
+      if (half < 0.8){ g.moveTo(cx - 0.4, cy); g.lineTo(cx + 0.4, cy); }
+      else { g.moveTo(cx - half, cy); g.quadraticCurveTo(cx, cy + bulge * 2, cx + half, cy); }
+      g.stroke();
+    }
+
+    function draw(p){
+      g.fillStyle = '#000';
+      g.fillRect(0, 0, W, H);
+      g.strokeStyle = INK;
+      g.lineCap = 'round';
+      g.lineJoin = 'round';
+      var gx = p[9], gy = p[10];
+      for (var pass = 0; pass < 2; pass++){
+        g.shadowColor = pass === 0 ? GLOW : 'transparent';
+        g.shadowBlur  = pass === 0 ? 26 : 0;
+        feature(CX - EYE_DX + gx, EYE_Y + gy, p[0], p[1], p[2]);
+        feature(CX + EYE_DX + gx, EYE_Y + gy, p[3], p[4], p[5]);
+        feature(CX + gx * 0.4, MOUTH_Y + gy * 0.4, p[6], p[7], p[8]);
+      }
+    }
+
+    function frame(t){
+      raf = requestAnimationFrame(frame);
+      if (t0 === null){ t0 = t; stepAt = t; blinkAt = t + rand(1800, 3600); mouthAt = t; sacAt = t; }
+      if (t - last < TICK) return;
+      last = t;
+
+      if (t - stepAt > PLAY[step][1]){
+        stepAt = t;
+        from = FACES[PLAY[step][0]];
+        step = (step + 1) % PLAY.length;
+        to = FACES[PLAY[step][0]];
+      }
+      var k = ease(Math.min(1, (t - stepAt) / MORPH));
+      var p = [];
+      for (var i = 0; i < from.length; i++) p.push(lerp(from[i], to[i], k));
+
+      // Speaking: the mouth keeps jumping to a new opening, the way the device's
+      // own face engine drives it while it talks. The opening is always eased
+      // toward its target, so it also blends back out without snapping.
+      var open = p[7];
+      if (PLAY[step][0] === 'konusuyor'){
+        if (t - mouthAt > rand(90, 160)){ mouthAt = t; mouthTarget = [14, 26, 44, 66][Math.floor(Math.random() * 4)]; }
+        open = mouthTarget;
+      }
+      mouth += (open - mouth) * 0.42;
+      p[7] = mouth;
+
+      // blink, then idle drift so the face never sits perfectly still
+      if (t > blinkAt){ blinkFor = t; blinkAt = t + rand(2600, 6000); }
+      var since = t - blinkFor, b = 0;
+      if (since < 170) b = since < 70 ? since / 70 : 1 - (since - 70) / 100;
+      if (b > 0) for (var e = 0; e < 6; e++) p[e] = lerp(p[e], BLINK[e % 3], b);
+
+      if (t - sacAt > rand(1400, 3000)){ sacAt = t; sacX = rand(-7, 7); sacY = rand(-4, 4); }
+      var s = (t - t0) / 1000;
+      p[9]  += 6 * Math.sin(s * 0.45) + sacX;
+      p[10] += 4 * Math.sin(s * 0.31) + sacY;
+
+      draw(p);
+      paint();
+    }
+
+    function paint(){
+      for (var i = 0; i < targets.length; i++){
+        if (!targets[i].live || !targets[i].ctx) continue;
+        targets[i].ctx.drawImage(master, 0, 0);
+        targets[i].tex.source.update();
+      }
+    }
+
+    function live(){
+      for (var i = 0; i < targets.length; i++) if (targets[i].live) return true;
+      return false;
+    }
+    function play(){
+      if (reduce || raf || document.hidden || !live()) return;
+      last = 0; raf = requestAnimationFrame(frame);
+    }
+    function pause(){ if (raf){ cancelAnimationFrame(raf); raf = null; } }
+    // don't burn frames while both models are scrolled away or the tab is hidden
+    function resync(){ if (document.hidden || !live()) pause(); else play(); }
+
+    document.addEventListener('visibilitychange', resync);
+
+    function attach(mv){
+      var model = mv.model;
+      if (!model) return;
+      var mat = null;
+      for (var i = 0; i < model.materials.length; i++){
+        if (model.materials[i].name === 'iva-screen'){ mat = model.materials[i]; break; }
+      }
+      if (!mat) return;                       // a model without a baked screen
+      Promise.resolve(mat.ensureLoaded ? mat.ensureLoaded() : null).then(function(){
+        var tex = mv.createCanvasTexture();
+        var cv = tex.source.element;
+        cv.width = W; cv.height = H;
+        mat.setEmissiveFactor([1, 1, 1]);
+        mat.emissiveTexture.setTexture(tex);
+        // Canvas textures keep three.js's default flipY, while the baked UVs follow
+        // glTF's top-left origin — so flip V back, after setTexture has reapplied
+        // the slot's own (identity) transform.
+        if (tex.sampler && tex.sampler.setScale){
+          tex.sampler.setScale({ u: 1, v: -1 });
+          tex.sampler.setOffset({ u: 0, v: 1 });
+        }
+
+        var tg = null;
+        for (var j = 0; j < targets.length; j++) if (targets[j].mv === mv) tg = targets[j];
+        if (!tg){
+          tg = { mv: mv, live: !reduce };
+          targets.push(tg);
+          new IntersectionObserver(function(entries){
+            entries.forEach(function(e){ tg.live = e.isIntersecting; });
+            resync();
+          }, { threshold: 0 }).observe(mv);
+        }
+        tg.tex = tex;
+        tg.ctx = cv.getContext('2d');
+
+        // paint one frame straight away so the panel is never a blank black hole
+        if (!raf) draw(FACES.sakin);
+        tg.ctx.drawImage(master, 0, 0);
+        tex.source.update();
+        play();
+      })['catch'](function(){ /* the screen is decoration — never break the page */ });
+    }
+
+    return { attach: attach };
+  })();
+
+  (function(){
+    var hero = document.getElementById('mvHero');
+    if (!hero) return;
+    hero.addEventListener('load', function(){ FaceScreen.attach(hero); });
+    if (hero.loaded) FaceScreen.attach(hero);   // cached model can beat the listener
+  })();
+
   /* ---------- hero: gentle sway ----------
      A full auto-rotate keeps parking the featureless back of the device toward
      the visitor. Swinging through a limited arc instead keeps the OLED face in
@@ -1098,7 +1290,7 @@
     mv.cameraTarget = 'auto auto auto';
     // NOTE: model-viewer re-frames the camera when `src` changes, so the orbit
     // must be applied *after* the load event — setting it here would be lost.
-    mv.src = open ? 'models/v2-open.glb' : 'models/v2-closed.glb';
+    mv.src = open ? 'models/v2-open.glb?s2' : 'models/v2-closed.glb?s2';
     if (open) { mv.removeAttribute('auto-rotate'); }
     else { mv.setAttribute('auto-rotate',''); }
     if (hint){
@@ -1109,6 +1301,7 @@
 
   mv.addEventListener('load', function(){
     loading.classList.add('gone');
+    FaceScreen.attach(mv);
     var p = pendingFocus; pendingFocus = null;
     if (isOpen) addHotspots();
     // two frames: let model-viewer finish its own auto-framing first
