@@ -63,6 +63,7 @@
   .stage.lime  {--paper:var(--lime);  --on:#fff;       --edge:rgba(255,255,255,.4); --soft:rgba(255,255,255,.18)}
   .stage.violet{--paper:var(--violet);--on:#fff;       --edge:rgba(255,255,255,.34);--soft:rgba(255,255,255,.14)}
   .stage.cream {--paper:var(--cream); --on:var(--ink); --edge:rgba(11,16,22,.16);  --soft:rgba(11,16,22,.05)}
+  .stage.white {--paper:#fff;         --on:var(--ink); --edge:rgba(11,16,22,.14);  --soft:rgba(11,16,22,.04)}
   .stage.ink   {--paper:var(--ink);   --on:#fff;       --edge:rgba(255,255,255,.22);--soft:rgba(255,255,255,.07)}
 
   /* ══════════ TYPE ══════════ */
@@ -317,6 +318,8 @@
 
   /* ══════════ KURUMSAL ══════════ */
   .kio{border-radius:30px;background:#fff;color:var(--ink);padding:clamp(26px,3vw,36px)}
+  /* beyaz bantta beyaz kutu kaybolur; hafif zemin ve çerçeveyle ayrılıyor */
+  .stage.white .kio{background:var(--soft);border:2px solid var(--edge)}
   .kio .kh{display:flex;align-items:center;gap:14px;margin-bottom:18px}
   .kio .kh .ki{width:50px;height:50px;border-radius:16px;display:grid;place-items:center;font-size:1.5rem;
     background:var(--cream);flex:none}
@@ -391,6 +394,8 @@
   .cta-btn:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 20px 40px -18px rgba(0,0,0,.6)}
   .cta-btn .arw{transition:transform .28s var(--ease)}
   .cta-btn:hover .arw{transform:translateX(5px)}
+  .cta-btn.ghost{background:transparent;color:inherit;border:2px solid var(--edge)}
+  .cta-btn.ghost:hover{background:#fff;color:var(--ink);border-color:#fff}
 
   footer{position:relative;background:var(--lime);color:#fff;overflow:hidden;padding:clamp(56px,7vw,90px) 0 34px}
   .foot-word{font-family:var(--display);font-size:clamp(4rem,20vw,17rem);line-height:.8;
@@ -464,6 +469,7 @@
       <button type="button" data-scene="pomodoro">⏱️ odak başlat</button>
       <button type="button" data-scene="saka">😄 şaka yap</button>
       <button type="button" data-scene="zar">🎲 zar at</button>
+      <button type="button" data-scene="paratura">🪙 yazı tura</button>
       <button type="button" data-scene="cark">🎡 çark çevir</button>
       <button type="button" data-scene="ucbilgi">🧠 3 bilgi</button>
     </div>
@@ -496,7 +502,7 @@
 </div>
 
 <!-- ══════════ NEDİR / DOKUNMADAN ══════════ -->
-<section class="stage cream" id="nedir" data-nav="dark">
+<section class="stage violet" id="nedir" data-nav="light">
   <div class="wrap">
     <h2 class="mega rv">dokun-<br>madan</h2>
 
@@ -740,7 +746,7 @@
 </section>
 
 <!-- ══════════ KURUMSAL ══════════ -->
-<section class="stage cream" id="kurumsal" data-nav="dark">
+<section class="stage white" id="kurumsal" data-nav="dark">
   <div class="wrap">
     <h2 class="mega rv">kurum-<br>sal</h2>
 
@@ -909,6 +915,8 @@
     <p class="note rv">Bekleme listesine katıl; prototipten çıkıp gerçek bir ürüne dönüştüğünde,
       fiyatlar ve teslim koşulları belli olduğunda ilk haber sana gelsin.</p>
     <p class="rv"><a class="cta-btn" href="waitlist.html">bekleme listesine katıl <span class="arw">→</span></a></p>
+    <p class="note rv" style="margin-top:26px">Bir sorunuz olursa lütfen iletişime geçmekten kaçınmayın.</p>
+    <p class="rv"><a class="cta-btn ghost" href="waitlist.html#iletisim">bize yazın <span class="arw">→</span></a></p>
   </div>
 </section>
 
@@ -1027,7 +1035,16 @@
     var hero = document.getElementById('mvHero');
     if (!Iva || !hero) return;
     heroStage.bubble(document.getElementById('heroSay'));
-    function ready(){ heroStage.attach(hero); }
+    var greeted = false;
+    function ready(){
+      heroStage.attach(hero);
+      // İva introduces itself once the face is actually up, with a different
+      // line every visit
+      if (!greeted){
+        greeted = true;
+        setTimeout(function(){ heroStage.play('merhaba'); }, 700);
+      }
+    }
     hero.addEventListener('load', ready);
     if (hero.loaded) ready();                 // a cached model can beat the listener
     Iva.gestures(hero, heroStage);

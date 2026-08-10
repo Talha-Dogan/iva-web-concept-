@@ -87,12 +87,25 @@
     background:#fff;color:var(--ink);font-family:inherit;font-weight:800;font-size:.95rem;outline:none}
   input[type=email]::placeholder{color:rgba(11,16,22,.42);font-weight:700}
   input[type=email]:focus{box-shadow:0 0 0 5px rgba(255,255,255,.28)}
+  textarea{flex:1 1 100%;min-width:0;padding:15px 20px;border-radius:22px;border:2px solid #fff;
+    background:#fff;color:var(--ink);font-family:inherit;font-weight:700;font-size:.92rem;
+    line-height:1.5;outline:none;resize:vertical;min-height:96px}
+  textarea::placeholder{color:rgba(11,16,22,.42);font-weight:700}
+  textarea:focus{box-shadow:0 0 0 5px rgba(255,255,255,.28)}
+  .more{flex:1 1 100%;order:-1;margin:0 0 2px}
+  .more button{background:none;border:0;padding:0;color:inherit;font:inherit;font-weight:900;
+    font-size:.8rem;cursor:pointer;text-decoration:underline;opacity:.9}
+  .more button:hover{opacity:1}
+  #wlForm[data-detail] .more{display:none}
+  #wlForm:not([data-detail]) textarea{display:none}
+  .col{display:grid;gap:16px;align-content:start}
   button[type=submit]{padding:16px 26px;border-radius:999px;border:2px solid var(--ink);
     background:var(--ink);color:#fff;font-family:inherit;font-weight:900;font-size:.95rem;cursor:pointer;
     display:inline-flex;align-items:center;gap:9px;transition:.26s var(--ease)}
   button[type=submit]:hover{transform:translateY(-2px);box-shadow:0 16px 30px -16px rgba(0,0,0,.6)}
   button[type=submit] .arw{transition:transform .26s var(--ease)}
   button[type=submit]:hover .arw{transform:translateX(4px)}
+  button[type=submit][disabled]{opacity:.6;cursor:progress;transform:none;box-shadow:none}
 
   .fine{font-size:.78rem;font-weight:700;opacity:.82;margin:16px 0 0;line-height:1.55}
   .msg{margin:16px 0 0;padding:14px 17px;border-radius:18px;background:rgba(11,16,22,.9);
@@ -158,6 +171,7 @@
           ilk haber verilecek kişiler bu listedekiler olacak.</p>
       </div>
 
+      <div class="col">
       <div class="box">
         <h2>haberdar ol</h2>
         <p class="lead">E-posta adresini bırak, İva çıkınca ilk sen bil.</p>
@@ -166,6 +180,9 @@
           <input type="email" id="wlMail" name="email" placeholder="E-posta adresin"
                  autocomplete="email" required aria-label="E-posta adresin">
           <button type="submit">katıl <span class="arw">→</span></button>
+          <p class="more"><button type="button" id="wlMore">detay ekle</button></p>
+          <textarea id="wlNote" placeholder="İstersen bir şey ekle: adın, nerede kullanmayı düşündüğün, merak ettiğin…"
+                    aria-label="Eklemek istediğin detay"></textarea>
         </form>
 
         <p class="msg" id="wlMsg" role="status" aria-live="polite"></p>
@@ -178,6 +195,23 @@
           <a href="#" id="wlPilot">bize doğrudan yaz</a>.
         </div>
       </div>
+
+      <div class="box" id="iletisim">
+        <h2>bir sorunuz mu var?</h2>
+        <p class="lead">Bir sorunuz olursa lütfen iletişime geçmekten kaçınmayın —
+          yazın, elimizden geldiğince hızlı dönüyoruz.</p>
+
+        <form id="ctForm" novalidate>
+          <input type="email" id="ctMail" name="email" placeholder="E-posta adresin"
+                 autocomplete="email" required aria-label="E-posta adresin">
+          <textarea id="ctNote" placeholder="Sorunuz ya da mesajınız…" required
+                    aria-label="Sorunuz ya da mesajınız"></textarea>
+          <button type="submit">gönder <span class="arw">→</span></button>
+        </form>
+
+        <p class="msg" id="ctMsg" role="status" aria-live="polite"></p>
+      </div>
+      </div>
     </div>
   </div>
 </main>
@@ -189,48 +223,6 @@
   </div>
 </footer>
 
-<script>
-(function(){
-  "use strict";
-  // Site tamamen statik: kayıtları tutacak bir sunucu yok. Bu yüzden form,
-  // adresi kendi e-posta uygulamanda hazır bir mesaja dönüştürüyor.
-  var U = ['tdogan181','gmail.com'];
-  var addr = U[0] + '@' + U[1];
-
-  var form = document.getElementById('wlForm');
-  var mail = document.getElementById('wlMail');
-  var msg  = document.getElementById('wlMsg');
-
-  function show(text, isErr){
-    msg.textContent = text;
-    msg.className = 'msg on' + (isErr ? ' err' : '');
-  }
-
-  form.addEventListener('submit', function(e){
-    e.preventDefault();
-    var v = (mail.value || '').trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){
-      show('Geçerli bir e-posta adresi yazar mısın?', true);
-      mail.focus();
-      return;
-    }
-    var href = 'mailto:' + addr +
-      '?subject=' + encodeURIComponent('İva — bekleme listesi') +
-      '&body=' + encodeURIComponent(
-        'Merhaba,\n\nİva hazır olduğunda haberdar olmak istiyorum.\n\n' +
-        'E-posta: ' + v + '\nAdım:\n');
-    window.location.href = href;
-    show('E-posta uygulaman hazır bir mesajla açılıyor — göndermen yeterli. ' +
-         'Açılmazsa ' + addr + ' adresine yazabilirsin.');
-  });
-
-  var pilot = document.getElementById('wlPilot');
-  pilot.setAttribute('href', 'mailto:' + addr +
-    '?subject=' + encodeURIComponent('İva — kurumsal pilot uygulama') +
-    '&body=' + encodeURIComponent(
-      'Merhaba,\n\nKurumumda İva ile bir pilot uygulama denemek istiyorum.\n\n' +
-      'Kurum:\nLokasyon:\nDüşündüğüm senaryo:\n'));
-})();
-</script>
+<script src="js/waitlist.js"></script>
 </body>
 </html>

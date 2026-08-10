@@ -323,8 +323,40 @@
     }
   }
 
+  /** v2's coin_flip: the coin turns over, squashing as it goes, then lands */
+  function drawCoin(g, s, t){
+    var flipping = !reduce && t < s.until - 320;
+    if (flipping && t - s.at > 70){ s.at = t; s.show = s.show === 'YAZI' ? 'TURA' : 'YAZI'; }
+    if (!flipping) s.show = s.value;
+    var R = 116;
+    var sq = flipping ? Math.abs(Math.cos(t / 95)) * 0.88 + 0.12 : 1;
+    g.save();
+    g.translate(CX, H * 0.5);
+    g.scale(1, sq);
+    g.strokeStyle = INK; g.lineWidth = 11;
+    glowOn(g, 20);
+    g.beginPath(); g.arc(0, 0, R, 0, TAU); g.stroke();
+    glowOff(g);
+    g.globalAlpha = 0.35; g.lineWidth = 5;
+    g.beginPath(); g.arc(0, 0, R - 22, 0, TAU); g.stroke();
+    g.globalAlpha = 1;
+    g.restore();
+    // the label is drawn unsquashed and fades out at the thin part of the spin,
+    // otherwise it turns to mush edge-on
+    if (sq > 0.5){
+      g.fillStyle = INK; g.textAlign = 'center';
+      g.globalAlpha = clamp((sq - 0.5) * 2.4, 0, 1);
+      glowOn(g, 16);
+      fitText(g, s.show, '900', 52, R * 1.7);
+      g.fillText(s.show, CX, H * 0.5 + 18);
+      glowOff(g);
+      g.globalAlpha = 1;
+    }
+  }
+
   function drawScreen(g, s, t){
     if (s.kind === 'dice') drawDice(g, s, t);
+    else if (s.kind === 'coin') drawCoin(g, s, t);
     else if (s.kind === 'word') drawWord(g, s);
     else if (s.kind === 'timer') drawTimer(g, s, t);
     else if (s.kind === 'wheel') drawWheel(g, s, t);
@@ -393,6 +425,20 @@
     ['apple', 'elma'], ['book', 'kitap'], ['water', 'su'], ['window', 'pencere'],
     ['friend', 'arkadaş'], ['morning', 'sabah'], ['bridge', 'köprü'], ['bread', 'ekmek']
   ];
+  // İva introduces itself; a different line every visit
+  var GREETS = [
+    'Selam, ben İva — masandaki arkadaşın.',
+    'Merhaba! Ben İva. Sen konuş yeter, gerisini ben hallederim.',
+    'Selam, ben İva. Masanın köşesinde seni bekliyordum.',
+    'Hoş geldin! Ben İva, sesle çalışan masaüstü yardımcın.',
+    'Selam! Ben İva. Not almayı, hatırlatmayı ve sohbet etmeyi severim.',
+    'Merhaba, ben İva — Türkçe konuşan küçük bir masa arkadaşı.',
+    'Selam! Ben İva. Ekrana dokunmana gerek yok, söylemen yeterli.',
+    'Hoş geldin, ben İva. Beni çevirebilir, sallayabilirsin — alınmam.',
+    'Selam, ben İva. Canın sıkılırsa zar atar, çark çeviririm.',
+    'Merhaba! Ben İva. Toplantıda sen dinle, notu ben tutayım.'
+  ];
+
   var JOKES = [
     ['Bilgisayarım dün üşütmüş.', 'Nedenini sordum: Windows açık kalmış.'],
     ['Matematik kitabı neden üzgünmüş?', 'Çok fazla problemi varmış.'],
@@ -400,7 +446,34 @@
   ];
   var wordAt = 0, jokeAt = 0;
 
+  /** pick a line, but never the same one twice in a row across visits */
+  function freshGreet(){
+    var last = -1;
+    try { last = parseInt(localStorage.getItem('iva-greet'), 10); } catch (e) {}
+    var i = Math.floor(Math.random() * GREETS.length);
+    if (i === last) i = (i + 1 + Math.floor(Math.random() * (GREETS.length - 1))) % GREETS.length;
+    try { localStorage.setItem('iva-greet', String(i)); } catch (e) {}
+    return GREETS[i];
+  }
+
   var SCENES = {
+    merhaba: function(){
+      return [
+        ['face', 'mutlu', 600],
+        ['say', freshGreet()],
+        ['face', 'goz_kirp', 1000]
+      ];
+    },
+    paratura: function(){
+      var heads = Math.random() < 0.5;
+      return [
+        ['face', 'dinliyor', 400],
+        ['say', 'Yazı tura atıyorum.'],
+        ['coin', heads ? 'YAZI' : 'TURA', 2100],
+        ['say', (heads ? 'Yazı' : 'Tura') + ' geldi.'],
+        ['face', 'mutlu', 900]
+      ];
+    },
     zar: function(){
       return [
         ['face', 'dusunen', 500],
@@ -686,6 +759,11 @@
         screen = { kind: 'timer', label: '25:00', note: 'odak', from: t, until: t + (s[1] || 2400) };
         return s[1] || 2400;
       }
+      if (kind === 'coin'){
+        data.coin = s[1];
+        screen = { kind: 'coin', value: s[1], show: s[1], at: t, from: t, until: t + (s[2] || 2000) };
+        return s[2] || 2000;
+      }
       if (kind === 'wheel'){
         screen = { kind: 'wheel', index: s[1], from: t, until: t + (s[2] || 2400) };
         return s[2] || 2400;
@@ -859,10 +937,11 @@
           stage.react('saskin', 'Başım döndü, biraz yavaş!');
         }
 
+        // tipping it up and down just makes it grin — no words for this one
         tilt += Math.abs(ph - lastPhi);
         if (tilt > 30){
           tilt = 0;
-          stage.react('mutlu', 'Yukarı aşağı — bu hoşuma gitti.');
+          stage.flash('gulme', 1500);
         }
       }
 
@@ -880,6 +959,7 @@
   window.IvaScreen = {
     FACES: FACES,
     SCENES: SCENES,
+    GREETS: GREETS,
     svg: svg,
     createStage: createStage,
     gestures: gestures,
