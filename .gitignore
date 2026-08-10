@@ -6,6 +6,9 @@
 # Yerel gelistirme araclari (siteye gitmiyor)
 .claude/
 
+# Uretilen ham gorseller diskte kaliyor; siteye optimize webp surumleri gidiyor.
+img/device_scene_*.jpg
+
 # Isletim sistemi artiklari
 Thumbs.db
 desktop.ini

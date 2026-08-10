@@ -9,6 +9,8 @@
 <meta property="og:title" content="İva — Sesle Çalışan Türkçe Masaüstü Asistanı">
 <meta property="og:description" content="Dokunmatik ekrana gerek kalmadan, tamamen Türkçe konuşan bir asistan. Yakında.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://iva-web-concept.vercel.app/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%2324c0fe'/%3E%3Crect x='7' y='11' width='26' height='19' rx='7' fill='%23fff'/%3E%3Ccircle cx='16' cy='19' r='2.6' fill='%2324c0fe'/%3E%3Ccircle cx='24' cy='19' r='2.6' fill='%2324c0fe'/%3E%3C/svg%3E">
 <link rel="preload" href="vendor/fonts/unbounded-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="vendor/fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -180,8 +182,8 @@
   .gal-track::-webkit-scrollbar{display:none}
   .card{flex:0 0 min(340px,74vw);scroll-snap-align:start;border-radius:26px;overflow:hidden;
     background:#fff;color:var(--ink);display:flex;flex-direction:column;min-height:330px}
-  .card .top{padding:26px;display:grid;place-items:center;font-size:3.1rem;min-height:150px;
-    background:var(--cap,#eef4f7)}
+  .card .top{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;
+    background:#eef4f7}
   .card .bot{padding:22px 24px 26px}
   .card .who{font-family:var(--display);font-weight:400;font-size:.62rem;text-transform:uppercase;
     letter-spacing:.14em;opacity:.5;margin-bottom:9px}
@@ -489,47 +491,47 @@
   <div class="wrap">
     <div class="gal rv">
       <div class="gal-track" id="galTrack">
-        <article class="card"><div class="top" style="--cap:#fff3e9">📝</div>
+        <article class="card"><img class="top" src="img/senaryo-01.webp" width="900" height="600" loading="lazy" decoding="async" alt="Ders sırasında sıranın üzerinde duran İva; açık defter ve kalem kenarda duruyor">
           <div class="bot"><div class="who">öğrenci</div><h3>Ders anlatılırken not tutmak</h3>
             <p>Hoca hızlı anlatıyor, yazmaya çalışırken yarısını kaçırıyorsun. İva dinlediklerini yazıya döküyor.</p>
             <div class="q">"İva, not al: final konuları 4. üniteden başlıyor."</div></div></article>
 
-        <article class="card"><div class="top" style="--cap:#e9f6ff">💼</div>
+        <article class="card"><img class="top" src="img/senaryo-02.webp" width="900" height="600" loading="lazy" decoding="async" alt="Toplantı bitiminde masada duran İva; dağılmış sandalyeler ve kapalı dizüstü bilgisayar">
           <div class="bot"><div class="who">profesyonel</div><h3>Toplantı çıkışı özet ve aksiyonlar</h3>
             <p>Toplantı biter bitmez kararları ve kimin ne yapacağını sesle kaydediyorsun.</p>
             <div class="q">"Toplantı notu: teklif pazartesiye hazırlanacak, sorumlu Ayşe."</div></div></article>
 
-        <article class="card"><div class="top" style="--cap:#f2f0ff">📅</div>
+        <article class="card"><img class="top" src="img/senaryo-03.webp" width="900" height="600" loading="lazy" decoding="async" alt="Çalışma masasında kitapların yanında duran İva, duvarda işaretli takvim">
           <div class="bot"><div class="who">öğrenci</div><h3>Teslim tarihlerini kaçırmamak</h3>
             <p>Ödev, vize, proje… hepsi söylediğin anda takvimine giriyor, zamanı gelince hatırlatılıyor.</p>
             <div class="q">"Salı 17.00'de proje teslimi var, bir gün önce hatırlat."</div></div></article>
 
-        <article class="card"><div class="top" style="--cap:#fff0f4">🍅</div>
+        <article class="card"><img class="top" src="img/senaryo-04.webp" width="900" height="600" loading="lazy" decoding="async" alt="Sade bir ev ofisinde masanın ortasında duran İva; telefon ters çevrilmiş">
           <div class="bot"><div class="who">uzaktan çalışan</div><h3>Odak seansı yönetmek</h3>
             <p>Telefonu eline almadan Pomodoro başlatıyorsun. İva süreyi tutuyor, molayı hatırlatıyor.</p>
             <div class="q">"Pomodoro başlat, bittiğinde haber ver."</div></div></article>
 
-        <article class="card"><div class="top" style="--cap:#eafaf3">🗣️</div>
+        <article class="card"><img class="top" src="img/senaryo-05.webp" width="900" height="600" loading="lazy" decoding="async" alt="Oturma odasında alçak masada duran İva ile konuşan bir kişi">
           <div class="bot"><div class="who">dil öğrenen</div><h3>Her gün 10 dakika pratik</h3>
             <p>Karşında biri olmadan İngilizce konuşmak zor. İva sohbet ediyor, hatalarını düzeltiyor.</p>
             <div class="q">"Benimle 10 dakika İngilizce konuş, sonra hatalarımı söyle."</div></div></article>
 
-        <article class="card"><div class="top" style="--cap:#e9f6ff">🏥</div>
+        <article class="card"><img class="top" src="img/senaryo-06.webp" width="900" height="600" loading="lazy" decoding="async" alt="Poliklinik danışma bankosunda duran İva, arkada bulanık koridor">
           <div class="bot"><div class="who">sağlık · poliklinik</div><h3>Danışmadaki tekrar eden sorular</h3>
             <p>Gün boyu yüzlerce kez sorulan yön sorularını İva karşılıyor, personel asıl işine dönüyor.</p>
             <div class="q">"Kan alma birimi nerede?"</div></div></article>
 
-        <article class="card"><div class="top" style="--cap:#f4fbe7">🧼</div>
+        <article class="card"><img class="top" src="img/senaryo-07.webp" width="900" height="600" loading="lazy" decoding="async" alt="Bekleme salonunda yan sehpada duran İva, boş koltuklar">
           <div class="bot"><div class="who">sağlık · bekleme salonu</div><h3>Hijyenik bilgilendirme</h3>
             <p>Ortak dokunulan yüzey yok. Randevu saatini ya da hazırlık talimatını sorman yeterli.</p>
             <div class="q">"Tahlil öncesi aç kalmam gerekiyor mu?"</div></div></article>
 
-        <article class="card"><div class="top" style="--cap:#fff3e9">🛍️</div>
+        <article class="card"><img class="top" src="img/senaryo-08.webp" width="900" height="600" loading="lazy" decoding="async" alt="AVM koridorunda ince bir sütun üzerinde duran İva">
           <div class="bot"><div class="who">avm · yönlendirme</div><h3>Mağaza ve kat bulma</h3>
             <p>Kiosk menüsünde kaybolmak yerine mağazanın adını söylüyorsun; İva yönü tarif ediyor.</p>
             <div class="q">"Sinema kaçıncı katta, nasıl giderim?"</div></div></article>
 
-        <article class="card"><div class="top" style="--cap:#f2f0ff">♿</div>
+        <article class="card"><img class="top" src="img/senaryo-09.webp" width="900" height="600" loading="lazy" decoding="async" alt="Mutfak masasında çay bardağının yanında duran İva ve yaşlı bir kişinin elleri">
           <div class="bot"><div class="who">erişilebilirlik</div><h3>Ekran okumakta zorlananlar</h3>
             <p>Görme zorluğu yaşayan ya da küçük yazıları okuyamayan biri için ses en doğal arayüz.</p>
             <div class="q">"Randevum saat kaçtaydı?"</div></div></article>
