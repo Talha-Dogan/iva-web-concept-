@@ -59,6 +59,31 @@
     gulme:     [ 46,  22, -34,   0,    46,  22, -34,   0,    40,  56,  30,    0,  -2]
   };
   var BLINK = [46, 12, 0, 0];              // one eye slot at the bottom of a blink
+
+  /**
+   * Mouth shape for a single letter, as [halfLen, thickness]. Open vowels get a
+   * wide mouth, round ones a small circle, closed consonants shut it — so the
+   * mouth is actually driven by what is being typed rather than flapping at
+   * random.
+   */
+  var MOUTH_A = [30, 62], MOUTH_ROUND = [6, 58], MOUTH_I = [26, 40],
+      MOUTH_CONS = [18, 28], MOUTH_SHUT = [22, 13], MOUTH_REST = [20, 18];
+  function mouthFor(ch){
+    var c = ch.toLowerCase();
+    if (c === 'a' || c === 'e') return MOUTH_A;
+    if (c === 'o' || c === 'ö' || c === 'u' || c === 'ü') return MOUTH_ROUND;
+    if (c === 'ı' || c === 'i') return MOUTH_I;
+    if (c === 'm' || c === 'p' || c === 'b') return MOUTH_SHUT;
+    if (/[a-zçğşü]/.test(c)) return MOUTH_CONS;
+    return MOUTH_REST;                     // space, punctuation, digits
+  }
+  /** how long to hold on a character before typing the next one */
+  function charDelay(ch){
+    if (/[.!?…]/.test(ch)) return 260;
+    if (/[,;:]/.test(ch)) return 170;
+    if (ch === ' ') return 74;
+    return 34;
+  }
   var PLAY = [
     ['sakin', 2400], ['konusuyor', 3400], ['mutlu', 2000], ['dinliyor', 2600],
     ['saskin', 1500], ['goz_kirp', 1300], ['dusunen', 2500], ['uykulu', 2200]
@@ -557,9 +582,18 @@
   var stages = [];
   var raf = null, lastTick = 0;
 
+  /** 20fps normally; a touch faster while talking so every letter gets a frame
+      of its own and the mouth reads as following the text */
+  function tickMs(){
+    for (var i = 0; i < stages.length; i++){
+      if (stages[i].talking()) return 33;
+    }
+    return TICK;
+  }
+
   function loop(t){
     raf = requestAnimationFrame(loop);
-    if (t - lastTick < TICK) return;
+    if (t - lastTick < tickMs()) return;
     lastTick = t;
     var any = false;
     for (var i = 0; i < stages.length; i++){
@@ -589,7 +623,9 @@
     var idle = 0, idleAt = 0, morphAt = 0;
     var held = null, mask = null;            // mask = expression a script is showing
     var blinkAt = 0, blinkFor = -9999, t0 = null;
-    var mouth = 20, mouthTarget = 20, mouthAt = 0;
+    var mouth = 20, mouthWide = 20, mouthTarget = 20, mouthAt = 0;
+    var sayShape = null;                     // mouth shape of the letter being typed
+    var chars = null, spans = null, offsets = null, sayStart = 0, sayIdx = 0;
     var sacX = 0, sacY = 0, sacAt = 0, gazeX = 0, gazeY = 0, wobble = 0;
     var speaking = false, screen = null;
     var script = null, scriptTimer = null, onIdle = null, data = {};
@@ -609,6 +645,7 @@
 
     function step(t, force){
       if (t0 === null){ t0 = t; idleAt = t; morphAt = t; blinkAt = t + rand(1800, 3600); mouthAt = t; sacAt = t; }
+      type(t);
 
       // the idle playlist stands still while a script or a card pick is in charge
       if (!mask && !held && t - idleAt > PLAY[idle][1]){ idle = (idle + 1) % PLAY.length; idleAt = t; }
@@ -623,14 +660,22 @@
       var p = [];
       for (var i = 0; i < from.length; i++) p.push(lerp(from[i], to[i], k));
 
-      // the mouth always eases toward its target, so speech blends in and out
-      var open = p[9];
-      if (speaking || want === 'konusuyor'){
+      // The mouth always eases toward its target, so speech blends in and out.
+      // While a line is being typed the target comes from the current letter;
+      // "konuşuyor" on its own just flaps, the way the device does when it has no
+      // text to go by.
+      var open = p[9], wide = p[8], k2 = MORPH ? 0.42 : 1;
+      if (speaking && sayShape){
+        wide = sayShape[0]; open = sayShape[1];
+        k2 = MORPH ? 0.55 : 1;               // snappier, so single letters register
+      } else if (speaking || want === 'konusuyor'){
         if (t - mouthAt > rand(90, 160)){ mouthAt = t; mouthTarget = [14, 26, 44, 66][Math.floor(Math.random() * 4)]; }
         open = mouthTarget;
       }
-      mouth += (open - mouth) * (MORPH ? 0.42 : 1);
+      mouth += (open - mouth) * k2;
+      mouthWide += (wide - mouthWide) * k2;
       p[9] = mouth;
+      p[8] = mouthWide;
       cur = p.slice();                       // base face, before blink and drift
 
       if (!reduce){
@@ -668,6 +713,9 @@
     function bubble(el){
       bubbleEl = el;
       txtEl = el ? el.querySelector('.txt') || el : null;
+      // The bubble counts as something worth animating for, so a line still types
+      // itself out even if the model's screen never came up.
+      if (el) watch({}, el.parentNode || el);
     }
 
     /** stop talking; `keep` lets the last bubble fade out on its own schedule */
@@ -675,6 +723,8 @@
       clearTimeout(sayTimer);
       sayTimer = null;
       speaking = false;
+      sayShape = null;
+      chars = spans = offsets = null;
       if (keep) return;
       clearTimeout(hideTimer);
       hideTimer = null;
@@ -689,43 +739,61 @@
     function say(text){
       hush();
       if (!txtEl) return 700;
-      var words = String(text).split(/\s+/).filter(Boolean);
-      var spans = [], total = 0, delays = [];
+      // One span per character: every letter is laid out up front but hidden, so
+      // the bubble is its final size from the first frame and nothing reflows
+      // while the line types itself out. Plain spans keep normal word wrapping —
+      // browsers still only break at the spaces.
+      var list = String(text).split('');
+      var els = [], offs = [], total = 0;
       txtEl.textContent = '';
-      words.forEach(function(w, i){
+      list.forEach(function(ch){
         var s = document.createElement('span');
-        s.className = 'w';
-        s.textContent = w + (i < words.length - 1 ? ' ' : '');
+        s.className = 'c';
+        s.textContent = ch;
         txtEl.appendChild(s);
-        spans.push(s);
-        var d = clamp(90 + 34 * w.length, 130, 420);
-        delays.push(d);
-        total += d;
+        els.push(s);
+        offs.push(total);                   // this letter shows up now...
+        total += charDelay(ch);             // ...then we hold before the next one
       });
       bubbleEl.setAttribute('data-on', '');
-      var tail = clamp(1200 + 26 * String(text).length, 1600, 3400);
+      var tail = clamp(1200 + 26 * list.length, 1600, 3400);
 
       if (reduce){
-        spans.forEach(function(s){ s.className = 'w on'; });
+        els.forEach(function(s){ s.className = 'c on'; });
         hideTimer = setTimeout(function(){ if (bubbleEl) bubbleEl.removeAttribute('data-on'); }, tail);
         return tail;
       }
 
+      // The reveal is driven off elapsed time in the render loop, not a chain of
+      // per-letter timeouts: a backgrounded tab clamps timers to one a second,
+      // which used to leave the text crawling seconds behind the scene it belongs
+      // to. Now the letters and the mouth both come off the same clock.
+      chars = list; spans = els; offsets = offs;
+      sayStart = now(); sayIdx = 0;
       speaking = true;
-      var i = 0;
-      (function next(){
-        if (i >= spans.length){
-          speaking = false;
-          return;
-        }
-        spans[i].className = 'w on';
-        sayTimer = setTimeout(next, delays[i++]);
-      })();
       hideTimer = setTimeout(function(){
         if (bubbleEl) bubbleEl.removeAttribute('data-on');
       }, total + tail);
       wake();
+      kick();
       return total + Math.min(tail, 900);
+    }
+
+    /** reveal every letter whose turn has come, and shape the mouth after the
+        last one — called from the render loop so text and face never drift apart */
+    function type(t){
+      if (!spans) return;
+      var el = t - sayStart;
+      while (sayIdx < spans.length && offsets[sayIdx] <= el){
+        spans[sayIdx].className = 'c on';
+        sayShape = mouthFor(chars[sayIdx]);
+        sayIdx++;
+      }
+      if (sayIdx >= spans.length){
+        speaking = false;
+        sayShape = null;
+        chars = spans = offsets = null;
+      }
     }
 
     /* ---------- scripts ---------- */
@@ -904,7 +972,8 @@
       hold: hold, flash: flash, react: react, say: say,
       play: play, stop: stop, look: look, spin: spin,
       onIdle: function(fn){ onIdle = fn; },
-      busy: function(){ return !!script; }
+      busy: function(){ return !!script; },
+      talking: function(){ return speaking; }
     };
     stages.push(stage);
     return stage;

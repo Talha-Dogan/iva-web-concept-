@@ -85,7 +85,7 @@
     form: 'wlForm', mail: 'wlMail', note: 'wlNote', msg: 'wlMsg',
     subject: 'İva — bekleme listesi',
     blank: 'Bekleme listesine katılmak istiyorum.',
-    done: 'Aldım! İva hazır olduğunda ilk sen haberdar olacaksın.',
+    done: 'İva hazır olduğunda ilk sen haberdar olacaksın.',
     body: function(v, d){
       return 'Merhaba,\n\nİva hazır olduğunda haberdar olmak istiyorum.\n\n' +
              'E-posta: ' + v + '\n' + (d ? '\n' + d + '\n' : '');

@@ -133,8 +133,8 @@
     box-shadow:0 20px 44px -24px rgba(0,0,0,.65)}
   .hero-say .bub::after{content:"";position:absolute;left:50%;bottom:-7px;translate:-50% 0;
     width:18px;height:18px;background:#fff;rotate:45deg;border-radius:0 0 4px 0}
-  .hero-say .w{opacity:0}
-  .hero-say .w.on{opacity:1;transition:opacity .1s linear}
+  .hero-say .c{opacity:0}
+  .hero-say .c.on{opacity:1}
 
   /* ekranı denemek için düğmeler */
   .hero-acts{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;
@@ -1111,24 +1111,40 @@
   (function(){
     var hero = document.getElementById('mvHero');
     if (!hero || reduce) return;
-    var raf = null, t0 = null, stopped = false;
+    var raf = null, t0 = null, seen = false, busyUntil = 0, resume = null;
+    var IDLE = 4500;                              // ms of stillness before it drifts again
 
     function frame(ts){
-      if (stopped) return;
       if (t0 === null) t0 = ts;
+      if (ts < busyUntil){                        // someone is dragging it right now
+        raf = requestAnimationFrame(frame);
+        return;
+      }
       var t = (ts - t0) / 1000;
-      var theta = -14 + 24 * Math.sin(t * 0.30);   // ≈ -38° … +10°
-      var phi   = 76 + 3 * Math.sin(t * 0.19);
+      // A little extra nod while it is talking, so it never looks switched off.
+      var talk = heroStage && heroStage.talking && heroStage.talking() ? 1 : 0;
+      var theta = -14 + 24 * Math.sin(t * 0.30) + talk * 1.7 * Math.sin(t * 2.2);
+      var phi   = 76 + 3 * Math.sin(t * 0.19) + talk * 1.2 * Math.sin(t * 1.7);
       hero.cameraOrbit = theta.toFixed(2) + 'deg ' + phi.toFixed(2) + 'deg auto';
       raf = requestAnimationFrame(frame);
     }
-    function play(){ if (!raf && !stopped){ t0 = null; raf = requestAnimationFrame(frame); } }
+    function play(){ if (!raf){ raf = requestAnimationFrame(frame); } }
     function pause(){ if (raf){ cancelAnimationFrame(raf); raf = null; } }
 
-    // hand the camera over for good as soon as someone drags it themselves
-    ['pointerdown','wheel','keydown'].forEach(function(ev){
-      hero.addEventListener(ev, function(){ stopped = true; pause(); }, {passive:true, once:true});
+    // Hand the camera over while someone is playing with it, then take the drift
+    // back a few seconds later — model-viewer eases the orbit, so it glides back
+    // from wherever they left it instead of snapping.
+    ['pointerdown','pointermove','wheel','keydown'].forEach(function(ev){
+      hero.addEventListener(ev, function(e){
+        if (ev === 'pointermove' && !seen) return;   // only while a drag is in progress
+        if (ev === 'pointerdown') seen = true;
+        busyUntil = performance.now() + IDLE;
+        clearTimeout(resume);
+        resume = setTimeout(function(){ t0 = null; }, IDLE);   // restart the phase cleanly
+      }, {passive:true});
     });
+    window.addEventListener('pointerup', function(){ seen = false; }, {passive:true});
+
     // don't burn frames while the hero is scrolled out of view
     new IntersectionObserver(function(entries){
       entries.forEach(function(e){ e.isIntersecting ? play() : pause(); });
