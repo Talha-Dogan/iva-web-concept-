@@ -5,450 +5,451 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>İva — Sesle Çalışan Türkçe Masaüstü Asistanı</title>
 <meta name="description" content="İva; Türkçe konuşan, sesle not alan, hatırlatan ve yönlendiren masaüstü asistanı. Masanda, klinikte, AVM'de — dokunmatik ekrana gerek kalmadan. Geliştirme aşamasında.">
-<meta name="theme-color" content="#080b11">
+<meta name="theme-color" content="#24c0fe">
 <meta property="og:title" content="İva — Sesle Çalışan Türkçe Masaüstü Asistanı">
 <meta property="og:description" content="Dokunmatik ekrana gerek kalmadan, tamamen Türkçe konuşan bir asistan. Yakında.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23080b11'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%234be3b4'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%2324c0fe'/%3E%3Crect x='7' y='11' width='26' height='19' rx='7' fill='%23fff'/%3E%3Ccircle cx='16' cy='19' r='2.6' fill='%2324c0fe'/%3E%3Ccircle cx='24' cy='19' r='2.6' fill='%2324c0fe'/%3E%3C/svg%3E">
+<link rel="preload" href="vendor/fonts/unbounded-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="vendor/fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="modulepreload" href="vendor/model-viewer.min.js">
 <link rel="preload" href="models/v2-closed.glb" as="fetch" type="model/gltf-binary" crossorigin>
 <style>
+  /* ══════════ FONTS (self-hosted, CSP font-src 'self') ══════════ */
+  @font-face{font-family:"Unbounded";font-style:normal;font-weight:400 700;font-display:swap;
+    src:url(vendor/fonts/unbounded-latin-ext.woff2) format("woff2");
+    unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+  @font-face{font-family:"Unbounded";font-style:normal;font-weight:400 700;font-display:swap;
+    src:url(vendor/fonts/unbounded-latin.woff2) format("woff2");
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  @font-face{font-family:"Nunito";font-style:normal;font-weight:400 900;font-display:swap;
+    src:url(vendor/fonts/nunito-latin-ext.woff2) format("woff2");
+    unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+  @font-face{font-family:"Nunito";font-style:normal;font-weight:400 900;font-display:swap;
+    src:url(vendor/fonts/nunito-latin.woff2) format("woff2");
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+  /* ══════════ TOKENS ══════════ */
   :root{
-    --bg:#080b11; --bg2:#0d1119; --panel:#131926; --panel2:#1a2233;
-    --line:#222b3d; --line2:#2e3950;
-    --text:#e9eff8; --muted:#93a1ba; --muted2:#6b7896;
-    --accent:#5cc9f5; --accent2:#8b7bf7; --accent3:#4be3b4;
-    --warm:#ffb45c;
-    --glow:rgba(92,201,245,.35);
-    --radius:20px;
+    --blue:#24c0fe; --cream:#eff9fb; --orange:#ff6a1e; --lime:#b6c814;
+    --violet:#6f63f2; --ink:#0b1016; --white:#fff;
+    --display:"Unbounded",Impact,"Arial Black",sans-serif;
+    --body:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
     --ease:cubic-bezier(.22,.8,.24,1);
+    --nav-h:74px;
   }
   *{box-sizing:border-box}
-  /* sticky nav is 66px — keep anchor targets from landing underneath it */
-  html{scroll-behavior:smooth;scroll-padding-top:82px}
-  body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,"Inter",Roboto,Arial,sans-serif;
-    background:var(--bg);color:var(--text);line-height:1.65;-webkit-font-smoothing:antialiased;
-    overflow-x:hidden}
+  html{scroll-behavior:smooth;scroll-padding-top:var(--nav-h);-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--blue);color:var(--white);font-family:var(--body);
+    font-weight:700;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   a{color:inherit;text-decoration:none}
   img{max-width:100%}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-  .wrap-wide{max-width:1320px;margin:0 auto;padding:0 24px}
-  section{padding:clamp(64px,9vw,112px) 0}
-  h1,h2,h3{line-height:1.14;margin:0;letter-spacing:-.02em}
-  .eyebrow{text-transform:uppercase;letter-spacing:.2em;font-size:.7rem;color:var(--accent);
-    font-weight:800;margin-bottom:16px}
+  button{font-family:inherit}
+  ::selection{background:var(--ink);color:var(--white)}
 
-  /* ---------- NAV ---------- */
-  nav{position:sticky;top:0;z-index:80;backdrop-filter:blur(14px);
-    background:rgba(8,11,17,.7);border-bottom:1px solid transparent;transition:border-color .3s,background .3s}
-  nav.stuck{border-bottom-color:var(--line);background:rgba(8,11,17,.9)}
-  nav .wrap-wide{display:flex;align-items:center;justify-content:space-between;height:66px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.16rem;letter-spacing:-.01em}
-  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent3);
-    box-shadow:0 0 14px var(--accent3);animation:breathe 3.4s var(--ease) infinite}
-  @keyframes breathe{50%{opacity:.35;transform:scale(.8)}}
-  .nav-links{display:flex;gap:28px;font-size:.9rem;color:var(--muted)}
-  .nav-links a{position:relative;padding:4px 0;transition:color .2s}
-  .nav-links a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;
-    background:var(--accent);transition:right .3s var(--ease)}
-  .nav-links a:hover{color:var(--text)}
-  .nav-links a:hover::after{right:0}
-  .nav-cta{padding:9px 20px;border-radius:999px;border:1px solid var(--line2);
-    background:var(--panel);color:var(--text);font-size:.86rem;font-weight:700;transition:.25s var(--ease)}
-  .nav-cta:hover{border-color:var(--accent);background:var(--panel2);transform:translateY(-1px)}
-  @media(max-width:940px){.nav-links{display:none}}
+  /* ══════════ LAYOUT ══════════ */
+  .wrap{width:min(1240px,100% - 48px);margin-inline:auto}
+  @media(max-width:620px){.wrap{width:calc(100% - 36px)}}
 
-  /* ---------- HERO ---------- */
-  .hero{position:relative;min-height:100svh;display:flex;flex-direction:column;
-    justify-content:center;overflow:hidden;padding:40px 0 96px}
-  .aurora{position:absolute;inset:-20% -10% auto;height:130%;pointer-events:none;z-index:0}
-  .aurora span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;
-    animation:drift 22s var(--ease) infinite alternate}
-  .aurora span:nth-child(1){width:52vw;height:52vw;left:-6vw;top:2vw;
-    background:radial-gradient(circle,rgba(92,201,245,.5),transparent 68%)}
-  .aurora span:nth-child(2){width:46vw;height:46vw;right:-4vw;top:-6vw;
-    background:radial-gradient(circle,rgba(139,123,247,.5),transparent 68%);animation-delay:-7s}
-  .aurora span:nth-child(3){width:40vw;height:40vw;left:32vw;bottom:-14vw;
-    background:radial-gradient(circle,rgba(75,227,180,.34),transparent 68%);animation-delay:-14s}
-  @keyframes drift{to{transform:translate3d(4vw,-3vw,0) scale(1.14)}}
-  .grid-lines{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.35;
-    background-image:linear-gradient(var(--line) 1px,transparent 1px),
-      linear-gradient(90deg,var(--line) 1px,transparent 1px);
-    background-size:64px 64px;
-    mask-image:radial-gradient(ellipse 78% 60% at 50% 42%,#000 20%,transparent 78%);
-    -webkit-mask-image:radial-gradient(ellipse 78% 60% at 50% 42%,#000 20%,transparent 78%)}
+  /* Every band paints its own full-bleed colour and hands the text colour down.
+     The extra top padding keeps a band's first heading clear of the fixed nav. */
+  .stage{position:relative;overflow:hidden;background:var(--paper);color:var(--on);
+    padding:clamp(108px,11vw,160px) 0 clamp(78px,10vw,148px)}
+  .stage.blue  {--paper:var(--blue);  --on:#fff;       --edge:rgba(255,255,255,.34);--soft:rgba(255,255,255,.14)}
+  .stage.orange{--paper:var(--orange);--on:#fff;       --edge:rgba(255,255,255,.36);--soft:rgba(255,255,255,.15)}
+  .stage.lime  {--paper:var(--lime);  --on:#fff;       --edge:rgba(255,255,255,.4); --soft:rgba(255,255,255,.18)}
+  .stage.violet{--paper:var(--violet);--on:#fff;       --edge:rgba(255,255,255,.34);--soft:rgba(255,255,255,.14)}
+  .stage.cream {--paper:var(--cream); --on:var(--ink); --edge:rgba(11,16,22,.16);  --soft:rgba(11,16,22,.05)}
+  .stage.ink   {--paper:var(--ink);   --on:#fff;       --edge:rgba(255,255,255,.22);--soft:rgba(255,255,255,.07)}
 
-  .hero .wrap-wide{position:relative;z-index:2}
-  .hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(24px,4vw,64px);align-items:center}
-  @media(max-width:960px){.hero-grid{grid-template-columns:1fr;text-align:center;gap:8px}}
+  /* ══════════ TYPE ══════════ */
+  .mega{font-family:var(--display);font-weight:400;text-transform:lowercase;
+    font-size:clamp(2.5rem,9.4vw,7.6rem);line-height:.96;letter-spacing:-.005em;
+    margin:0 0 clamp(30px,4.4vw,58px);word-break:normal;hyphens:none}
+  .mega.sm{font-size:clamp(2rem,6vw,4.2rem)}
+  .kicker{font-family:var(--display);font-size:clamp(.62rem,1.1vw,.74rem);text-transform:uppercase;
+    letter-spacing:.18em;opacity:.82;margin:0 0 18px}
+  .say{font-weight:900;font-size:clamp(1.02rem,1.55vw,1.32rem);line-height:1.32;margin:0 0 20px;
+    letter-spacing:-.01em;max-width:24ch}
+  .note{font-weight:700;font-size:clamp(.82rem,1.05vw,.95rem);line-height:1.62;margin:0 0 14px;
+    max-width:46ch;opacity:.94}
+  .note:last-child{margin-bottom:0}
+  /* the reference drops its running copy into the right half of the band */
+  .copy{margin-left:clamp(0px,48vw,660px);max-width:46ch}
+  @media(max-width:900px){.copy{margin-left:0;max-width:none}}
 
-  .soon-chip{display:inline-flex;align-items:center;gap:9px;padding:7px 16px 7px 10px;
-    border-radius:999px;border:1px solid rgba(255,180,92,.34);background:rgba(255,180,92,.08);
-    color:var(--warm);font-size:.79rem;font-weight:700;letter-spacing:.02em}
-  .soon-chip i{width:7px;height:7px;border-radius:50%;background:var(--warm);
-    box-shadow:0 0 10px var(--warm);animation:breathe 2.2s infinite;font-style:normal}
-  .hero h1{font-size:clamp(2.5rem,6.2vw,4.4rem);font-weight:800;margin-top:22px}
-  .hero h1 .grad{background:linear-gradient(104deg,var(--accent),var(--accent2) 52%,var(--accent3));
-    -webkit-background-clip:text;background-clip:text;color:transparent}
-  .hero .lead{font-size:clamp(1.02rem,1.5vw,1.18rem);color:var(--muted);margin:24px 0 32px;max-width:46ch}
-  @media(max-width:960px){.hero .lead{margin-inline:auto}}
-  .hero-actions{display:flex;gap:14px;flex-wrap:wrap}
-  @media(max-width:960px){.hero-actions{justify-content:center}}
-  .btn{padding:15px 30px;border-radius:999px;font-weight:800;font-size:1rem;
-    display:inline-flex;align-items:center;gap:10px;transition:.25s var(--ease);
-    cursor:pointer;border:1px solid transparent;font-family:inherit}
-  .btn.primary{background:linear-gradient(104deg,var(--accent),var(--accent2));color:#06101a;
-    box-shadow:0 14px 40px -12px var(--glow)}
-  .btn.primary:hover{transform:translateY(-2px);box-shadow:0 20px 50px -12px var(--glow)}
-  .btn.ghost{border-color:var(--line2);background:rgba(19,25,38,.7);color:var(--text)}
-  .btn.ghost:hover{border-color:var(--accent);transform:translateY(-2px)}
-  .hero-meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:28px;color:var(--muted2);font-size:.84rem}
-  @media(max-width:960px){.hero-meta{justify-content:center}}
-  .hero-meta b{color:var(--muted);font-weight:600}
+  /* ══════════ NAV ══════════ */
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;height:var(--nav-h);display:flex;
+    align-items:center;pointer-events:none}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+  nav a{pointer-events:auto}
+  .mark{display:block;width:42px;height:42px;transition:transform .3s var(--ease)}
+  .mark:hover{transform:rotate(-8deg) scale(1.06)}
+  .mark svg{display:block;width:100%;height:100%}
+  .mark .face{fill:#fff;transition:fill .35s var(--ease)}
+  .mark .eye{fill:var(--blue);transition:fill .35s var(--ease)}
+  .pill{display:inline-flex;align-items:center;gap:9px;padding:11px 20px;border-radius:999px;
+    background:#fff;color:var(--ink);font-weight:900;font-size:.88rem;letter-spacing:-.01em;
+    border:2px solid #fff;transition:.28s var(--ease)}
+  .pill:hover{transform:translateY(-2px);box-shadow:0 12px 26px -12px rgba(0,0,0,.5)}
+  .pill .arw{transition:transform .28s var(--ease)}
+  .pill:hover .arw{transform:translateX(4px)}
+  /* over cream/lime bands the white chrome would disappear, so it flips to ink */
+  nav[data-on="dark"] .mark .face{fill:var(--ink)}
+  nav[data-on="dark"] .mark .eye{fill:var(--cream)}
+  nav[data-on="dark"] .pill{background:var(--ink);color:#fff;border-color:var(--ink)}
 
-  /* On phones the stacked hero would push the device below the fold, so the
-     product leads and the copy follows. */
-  @media(max-width:960px){
-    .hero{min-height:auto;padding:16px 0 84px}
-    .hero-grid{gap:6px}
-    .hero-stage{order:-1}
-    .hero .lead{margin:18px auto 26px}
-    .hero h1{margin-top:16px}
-    model-viewer{height:clamp(230px,34svh,300px)}
-  }
-  .hero-stage{position:relative;min-height:min(56vh,520px);display:grid;place-items:center}
-  @media(max-width:960px){.hero-stage{min-height:0}}
-  .hero-stage::after{content:"";position:absolute;bottom:6%;left:50%;transform:translateX(-50%);
-    width:56%;height:26px;border-radius:50%;background:radial-gradient(ellipse,rgba(92,201,245,.3),transparent 70%);
-    filter:blur(14px)}
-  model-viewer{width:100%;height:min(56vh,520px);--poster-color:transparent;
-    background:transparent;outline:none}
-  .mv-fallback{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted2);
-    font-size:.86rem;text-align:center;padding:20px}
+  /* ══════════ TILED WORDMARK ══════════ */
+  .tiles{position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;
+    font-family:var(--display);color:#fff;opacity:.13;
+    font-size:clamp(52px,8.6vw,132px);line-height:1.34;letter-spacing:.02em}
+  .tiles div{white-space:nowrap}
+  .tiles div:nth-child(even){transform:translateX(-.42em)}
+  .stage.cream .tiles{color:var(--ink);opacity:.06}
 
-  .scroll-cue{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:3;
-    display:flex;flex-direction:column;align-items:center;gap:9px;color:var(--muted2);
-    font-size:.7rem;letter-spacing:.22em;text-transform:uppercase}
-  .scroll-cue .mouse{width:24px;height:38px;border:1.5px solid var(--line2);border-radius:999px;position:relative}
-  .scroll-cue .mouse::after{content:"";position:absolute;left:50%;top:8px;width:3px;height:7px;
-    border-radius:2px;background:var(--accent);transform:translateX(-50%);animation:wheel 1.9s var(--ease) infinite}
-  @keyframes wheel{0%{opacity:0;transform:translate(-50%,-4px)}35%{opacity:1}
-    75%,100%{opacity:0;transform:translate(-50%,14px)}}
-  @media(max-height:680px){.scroll-cue{display:none}}
+  /* ══════════ HERO ══════════ */
+  .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;
+    padding-top:calc(var(--nav-h) + 8px);padding-bottom:64px}
+  .hero .wrap{position:relative;z-index:2}
+  .hero-stage{position:relative;display:grid;place-items:center}
+  .hero-stage::after{content:"";position:absolute;bottom:4%;left:50%;translate:-50% 0;
+    width:44%;height:30px;border-radius:50%;background:rgba(0,60,90,.28);filter:blur(18px)}
+  model-viewer{width:100%;--poster-color:transparent;background:transparent;outline:none}
+  #mvHero{height:min(62svh,600px)}
+  .mv-fallback{position:absolute;inset:0;display:grid;place-items:center;color:#fff;
+    font-size:.86rem;text-align:center;padding:20px;opacity:.8}
+  .chip{display:inline-flex;align-items:center;gap:9px;padding:8px 17px;border-radius:999px;
+    border:2px solid var(--edge);font-size:.78rem;font-weight:900;letter-spacing:.01em}
+  .chip i{width:8px;height:8px;border-radius:50%;background:currentColor;font-style:normal;
+    animation:blink 2.4s var(--ease) infinite}
+  @keyframes blink{50%{opacity:.25;transform:scale(.7)}}
+  .hero-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:26px;
+    flex-wrap:wrap;margin-top:clamp(22px,3.4vw,40px)}
+  .hero-foot .lead{font-family:var(--display);font-size:clamp(1.15rem,2.5vw,2.1rem);
+    line-height:1.14;text-transform:lowercase;margin:0;max-width:16ch}
+  .hero-foot .side{font-weight:800;font-size:.86rem;text-align:right;opacity:.94;max-width:34ch}
+  @media(max-width:780px){.hero-foot .side{text-align:left}}
+  .cue{position:absolute;left:50%;bottom:22px;translate:-50% 0;z-index:3;font-size:.68rem;
+    letter-spacing:.22em;text-transform:uppercase;font-weight:900;display:flex;
+    flex-direction:column;align-items:center;gap:8px}
+  .cue span.m{width:22px;height:34px;border:2px solid var(--edge);border-radius:999px;position:relative}
+  .cue span.m::after{content:"";position:absolute;left:50%;top:7px;width:3px;height:7px;border-radius:2px;
+    background:currentColor;translate:-50% 0;animation:wheel 1.9s var(--ease) infinite}
+  @keyframes wheel{0%{opacity:0;translate:-50% -4px}35%{opacity:1}75%,100%{opacity:0;translate:-50% 12px}}
+  @media(max-height:700px){.cue{display:none}}
 
-  /* entrance animation */
-  .rise{opacity:0;transform:translateY(26px);animation:rise .95s var(--ease) forwards}
-  @keyframes rise{to{opacity:1;transform:none}}
-  .d1{animation-delay:.05s}.d2{animation-delay:.16s}.d3{animation-delay:.28s}
-  .d4{animation-delay:.4s}.d5{animation-delay:.52s}.d6{animation-delay:.66s}
+  /* ══════════ TICKER ══════════ */
+  .ticker{background:var(--ink);color:#fff;overflow:hidden;padding:15px 0;
+    border-block:3px solid var(--ink)}
+  .ticker .track{display:flex;width:max-content;animation:slide 34s linear infinite}
+  .ticker .track>span{font-family:var(--display);font-size:.86rem;text-transform:lowercase;
+    padding-inline:26px;white-space:nowrap;display:inline-flex;align-items:center;gap:26px}
+  .ticker .track>span::after{content:"◆";font-size:.6em;opacity:.55}
+  @keyframes slide{to{transform:translateX(-50%)}}
 
-  /* ---------- STATUS STRIP ---------- */
-  .strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2)}
-  .strip .wrap{display:flex;flex-wrap:wrap;gap:14px 30px;justify-content:center;align-items:center;
-    padding:20px 24px;color:var(--muted);font-size:.88rem}
-  .strip b{color:var(--text);font-weight:700}
+  /* ══════════ SPLIT PANELS ══════════ */
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:clamp(34px,4vw,52px)}
+  @media(max-width:820px){.duo{grid-template-columns:1fr}}
+  .panel{border-radius:28px;padding:clamp(24px,3vw,34px);background:var(--soft);
+    border:2px solid var(--edge)}
+  .panel.solid{background:#fff;color:var(--ink);border-color:#fff}
+  .panel h3{font-family:var(--display);font-size:1rem;text-transform:lowercase;margin:0 0 18px;
+    font-weight:400}
+  .panel ul{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+  .panel li{display:flex;gap:11px;font-size:.9rem;font-weight:700;line-height:1.5}
+  .panel li::before{content:"✕";font-weight:900;flex:none;opacity:.55}
+  .panel.solid li::before{content:"✓";color:var(--blue);opacity:1}
 
-  /* ---------- SECTION HEADS ---------- */
-  .head{max-width:680px;margin:0 auto clamp(38px,5vw,58px);text-align:center}
-  .head h2{font-size:clamp(1.85rem,4vw,2.7rem);font-weight:800}
-  .head p{color:var(--muted);margin-top:16px;font-size:1.04rem}
-  .head.left{margin-inline:0;text-align:left}
+  /* ══════════ FEATURE TILES ══════════ */
+  .tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:880px){.tiles3{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.tiles3{grid-template-columns:1fr}}
+  .tile{border-radius:26px;padding:26px;background:var(--soft);border:2px solid var(--edge);
+    transition:.3s var(--ease)}
+  .tile:hover{transform:translateY(-5px);background:#fff;color:var(--ink);border-color:#fff}
+  .tile .ic{font-size:1.7rem;line-height:1;margin-bottom:16px}
+  .tile h3{font-family:var(--display);font-weight:400;font-size:.92rem;text-transform:lowercase;
+    margin:0 0 8px}
+  .tile p{margin:0;font-size:.87rem;font-weight:700;line-height:1.55;opacity:.92}
+  .tile:hover p{opacity:.78}
 
-  /* ---------- PANES ---------- */
-  .split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media(max-width:780px){.split{grid-template-columns:1fr}}
-  .pane{border:1px solid var(--line);border-radius:var(--radius);padding:28px;background:var(--panel)}
-  .pane h3{font-size:1.14rem;margin-bottom:16px}
-  .pane ul{margin:0;padding:0;list-style:none;display:grid;gap:12px}
-  .pane li{display:flex;gap:11px;color:var(--muted);font-size:.96rem}
-  .pane.bad li::before{content:"✕";color:#ff7a90;font-weight:800;flex:none}
-  .pane.good{background:linear-gradient(180deg,rgba(75,227,180,.07),var(--panel));
-    border-color:rgba(75,227,180,.26)}
-  .pane.good li::before{content:"✓";color:var(--accent3);font-weight:800;flex:none}
-  .pane.good li{color:var(--text)}
-
-  /* ---------- CARD GRID ---------- */
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  @media(max-width:860px){.grid{grid-template-columns:1fr 1fr}}
-  @media(max-width:540px){.grid{grid-template-columns:1fr}}
-  .card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);
-    border-radius:var(--radius);padding:26px;transition:.3s var(--ease)}
-  .card:hover{border-color:var(--accent);transform:translateY(-5px);box-shadow:0 24px 46px -26px var(--glow)}
-  .ico{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:1.4rem;
-    background:var(--panel2);border:1px solid var(--line);margin-bottom:18px}
-  .card h3{font-size:1.08rem;margin-bottom:9px}
-  .card p{color:var(--muted);font-size:.93rem;margin:0}
-
-  /* ---------- 3D EXPLORER ---------- */
-  .explorer{background:
-    radial-gradient(760px 460px at 22% 12%,rgba(92,201,245,.11),transparent 62%),
-    radial-gradient(700px 460px at 82% 84%,rgba(139,123,247,.13),transparent 62%),
-    var(--bg2);
-    border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-  .exp-shell{display:grid;grid-template-columns:1.35fr .65fr;gap:26px;align-items:stretch}
-  @media(max-width:960px){.exp-shell{grid-template-columns:1fr}}
-  .exp-stage{position:relative;border:1px solid var(--line);border-radius:24px;overflow:hidden;
-    background:radial-gradient(ellipse 70% 60% at 50% 42%,rgba(30,40,60,.9),var(--bg) 78%);
-    min-height:clamp(400px,58vh,600px)}
-  .exp-stage model-viewer{height:clamp(400px,58vh,600px)}
-  .exp-toggle{position:absolute;top:16px;left:16px;z-index:5;display:flex;gap:4px;padding:4px;
-    border-radius:999px;background:rgba(8,11,17,.78);border:1px solid var(--line2);backdrop-filter:blur(10px)}
-  .exp-toggle button{padding:9px 18px;border-radius:999px;border:none;background:transparent;
-    color:var(--muted);font-weight:700;font-size:.84rem;cursor:pointer;transition:.25s var(--ease);
-    font-family:inherit}
-  .exp-toggle button.on{background:linear-gradient(104deg,var(--accent),var(--accent2));color:#06101a}
-  .exp-toggle button:not(.on):hover{color:var(--text)}
-  .exp-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:5;
-    padding:8px 18px;border-radius:999px;background:rgba(8,11,17,.72);border:1px solid var(--line);
-    color:var(--muted2);font-size:.74rem;letter-spacing:.13em;text-transform:uppercase;
-    backdrop-filter:blur(8px);white-space:nowrap;transition:opacity .4s}
-  .exp-loading{position:absolute;inset:0;z-index:4;display:grid;place-items:center;
-    background:var(--bg2);transition:opacity .6s var(--ease)}
-  .exp-loading.gone{opacity:0;pointer-events:none}
-  .spinner{width:34px;height:34px;border-radius:50%;border:2px solid var(--line2);
-    border-top-color:var(--accent);animation:spin .8s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  .hotspot{--hs:#5cc9f5;width:19px;height:19px;border-radius:50%;border:2px solid var(--hs);
-    background:rgba(8,11,17,.85);cursor:pointer;padding:0;position:relative;
-    transition:.25s var(--ease);box-shadow:0 0 0 0 rgba(92,201,245,.5)}
-  .hotspot::before{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--hs)}
-  .hotspot:hover,.hotspot.sel{transform:scale(1.28);box-shadow:0 0 0 7px rgba(92,201,245,.16)}
-  .hotspot[data-visibility-attribute="visible"]{opacity:1}
-  .hs-label{position:absolute;left:26px;top:50%;transform:translateY(-50%);white-space:nowrap;
-    padding:5px 12px;border-radius:9px;background:rgba(8,11,17,.92);border:1px solid var(--line2);
-    color:var(--text);font-size:.78rem;font-weight:700;opacity:0;pointer-events:none;
+  /* ══════════ GALLERY (yatay şerit) ══════════ */
+  .gal{position:relative;margin:0 0 clamp(30px,4vw,46px)}
+  .gal-track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
+    padding:4px 0 18px;scrollbar-width:none}
+  .gal-track::-webkit-scrollbar{display:none}
+  .card{flex:0 0 min(340px,74vw);scroll-snap-align:start;border-radius:26px;overflow:hidden;
+    background:#fff;color:var(--ink);display:flex;flex-direction:column;min-height:330px}
+  .card .top{padding:26px;display:grid;place-items:center;font-size:3.1rem;min-height:150px;
+    background:var(--cap,#eef4f7)}
+  .card .bot{padding:22px 24px 26px}
+  .card .who{font-family:var(--display);font-weight:400;font-size:.62rem;text-transform:uppercase;
+    letter-spacing:.14em;opacity:.5;margin-bottom:9px}
+  .card h3{font-size:1.02rem;margin:0 0 8px;font-weight:900;letter-spacing:-.01em}
+  .card p{margin:0;font-size:.85rem;font-weight:700;line-height:1.55;opacity:.72}
+  .card .q{margin-top:13px;padding-left:12px;border-left:3px solid var(--orange);
+    font-size:.82rem;font-weight:800;font-style:italic}
+  .gal-nav{display:flex;gap:10px;justify-content:flex-end}
+  .gal-nav button{width:42px;height:42px;border-radius:50%;border:2px solid var(--edge);
+    background:transparent;color:inherit;font-size:1rem;cursor:pointer;display:grid;place-items:center;
     transition:.25s var(--ease)}
+  .gal-nav button:hover{background:#fff;color:var(--ink);border-color:#fff}
+  .gal-nav button:disabled{opacity:.3;cursor:default}
+  .gal-nav button:disabled:hover{background:transparent;color:inherit;border-color:var(--edge)}
+
+  /* ══════════ 3D EXPLORER ══════════ */
+  .exp{display:grid;grid-template-columns:1.3fr .7fr;gap:20px;align-items:stretch}
+  @media(max-width:960px){.exp{grid-template-columns:1fr}}
+  .exp-stage{position:relative;border-radius:30px;overflow:hidden;min-height:clamp(400px,56vh,600px);
+    background:radial-gradient(ellipse 62% 58% at 50% 46%,rgba(255,255,255,.26),transparent 72%);
+    border:2px solid var(--edge)}
+  .exp-stage model-viewer{height:clamp(400px,56vh,600px)}
+  .seg{position:absolute;top:16px;left:16px;z-index:5;display:flex;gap:4px;padding:4px;
+    border-radius:999px;background:rgba(255,255,255,.22);border:2px solid var(--edge);
+    backdrop-filter:blur(8px)}
+  .seg button{padding:9px 18px;border-radius:999px;border:none;background:transparent;color:#fff;
+    font-weight:900;font-size:.82rem;cursor:pointer;transition:.25s var(--ease)}
+  .seg button.on{background:#fff;color:var(--ink)}
+  .hint{position:absolute;bottom:16px;left:50%;translate:-50% 0;z-index:5;padding:8px 17px;
+    border-radius:999px;background:rgba(255,255,255,.2);border:2px solid var(--edge);
+    font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;font-weight:900;
+    white-space:nowrap;transition:opacity .4s;backdrop-filter:blur(8px)}
+  .exp-load{position:absolute;inset:0;z-index:4;display:grid;place-items:center;
+    background:var(--lime);transition:opacity .6s var(--ease)}
+  .exp-load.gone{opacity:0;pointer-events:none}
+  .spinner{width:32px;height:32px;border-radius:50%;border:3px solid rgba(255,255,255,.3);
+    border-top-color:#fff;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .hotspot{--hs:#fff;width:19px;height:19px;border-radius:50%;border:3px solid #fff;
+    background:var(--hs);cursor:pointer;padding:0;position:relative;transition:.25s var(--ease);
+    box-shadow:0 2px 10px rgba(0,0,0,.3)}
+  .hotspot:hover,.hotspot.sel{transform:scale(1.3);box-shadow:0 0 0 7px rgba(255,255,255,.3)}
+  .hs-label{position:absolute;left:26px;top:50%;translate:0 -50%;white-space:nowrap;padding:5px 12px;
+    border-radius:9px;background:#fff;color:var(--ink);font-size:.75rem;font-weight:900;opacity:0;
+    pointer-events:none;transition:.25s var(--ease)}
   .hotspot:hover .hs-label,.hotspot.sel .hs-label{opacity:1;left:30px}
+  .parts{border-radius:30px;background:#fff;color:var(--ink);padding:clamp(22px,2.6vw,30px);
+    display:flex;flex-direction:column}
+  .parts h3{font-family:var(--display);font-weight:400;font-size:.95rem;text-transform:lowercase;margin:0 0 4px}
+  .parts .sub{font-size:.8rem;font-weight:700;opacity:.55;margin-bottom:18px}
+  .parts ol{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+  .parts button{width:100%;display:flex;gap:12px;align-items:flex-start;text-align:left;padding:12px 13px;
+    border-radius:15px;border:2px solid transparent;background:#f3f7f9;color:inherit;cursor:pointer;
+    transition:.24s var(--ease)}
+  .parts button:hover{transform:translateX(3px);border-color:rgba(11,16,22,.14)}
+  .parts button.sel{border-color:var(--lime);background:#fbfde9}
+  .parts .sw{width:13px;height:13px;border-radius:4px;flex:none;margin-top:4px;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+  .parts .pn{font-weight:900;font-size:.88rem;display:block}
+  .parts .pd{font-size:.79rem;font-weight:700;opacity:.6;display:block;margin-top:1px}
+  .parts .foot{margin-top:auto;padding-top:18px;font-size:.75rem;font-weight:700;opacity:.5;line-height:1.55}
 
-  .parts-list{border:1px solid var(--line);border-radius:24px;background:var(--panel);
-    padding:26px;display:flex;flex-direction:column}
-  .parts-list h3{font-size:1.1rem;margin-bottom:6px}
-  .parts-list .sub{color:var(--muted2);font-size:.85rem;margin-bottom:20px}
-  .parts-list ol{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-  .parts-list li button{width:100%;display:flex;gap:13px;align-items:flex-start;text-align:left;
-    padding:13px 14px;border-radius:13px;border:1px solid transparent;background:var(--bg2);
-    color:inherit;cursor:pointer;transition:.25s var(--ease);font-family:inherit}
-  .parts-list li button:hover{border-color:var(--line2);transform:translateX(3px)}
-  .parts-list li button.sel{border-color:var(--accent);background:var(--panel2)}
-  .parts-list .sw{width:13px;height:13px;border-radius:4px;flex:none;margin-top:5px;
-    box-shadow:0 0 0 1px rgba(255,255,255,.14)}
-  .parts-list .pn{font-weight:700;font-size:.92rem;display:block}
-  .parts-list .pd{color:var(--muted);font-size:.82rem;display:block;margin-top:2px}
-  .parts-note{margin-top:auto;padding-top:20px;color:var(--muted2);font-size:.78rem;line-height:1.6}
+  /* ══════════ FACES ══════════ */
+  .faces{display:flex;gap:14px;overflow-x:auto;padding:6px 0 20px;scrollbar-width:none}
+  .faces::-webkit-scrollbar{display:none}
+  .face-card{flex:0 0 118px;height:118px;border-radius:22px;background:var(--soft);
+    border:2px solid var(--edge);display:grid;place-items:center;gap:0;transition:.3s var(--ease)}
+  .face-card:nth-child(odd){rotate:-4deg}
+  .face-card:nth-child(even){rotate:3deg}
+  .face-card:hover{rotate:0deg;background:#fff;transform:translateY(-5px)}
+  .face-card svg{width:62px;height:44px}
+  .face-card .lbl{font-size:.66rem;font-weight:900;text-transform:lowercase;opacity:.7;margin-top:6px}
+  .face-card:hover .lbl,.face-card:hover svg{color:var(--ink)}
 
-  /* ---------- TABS ---------- */
-  .tabs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:34px}
-  .tab-btn{padding:11px 20px;border-radius:999px;border:1px solid var(--line);background:var(--panel);
-    color:var(--muted);font-weight:700;font-size:.9rem;cursor:pointer;transition:.25s var(--ease);
-    font-family:inherit}
-  .tab-btn:hover{color:var(--text);border-color:var(--accent2)}
-  .tab-btn.active{background:linear-gradient(104deg,var(--accent),var(--accent2));color:#06101a;
-    border-color:transparent}
+  /* ══════════ KOMUT SEKMELERİ ══════════ */
+  .tabs{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:26px}
+  .tab-btn{padding:10px 18px;border-radius:999px;border:2px solid var(--edge);background:transparent;
+    color:inherit;font-weight:900;font-size:.84rem;cursor:pointer;transition:.24s var(--ease)}
+  .tab-btn:hover{border-color:#fff}
+  .tab-btn.active{background:#fff;color:var(--ink);border-color:#fff}
   .tab-panel{display:none}
-  .tab-panel.active{display:block;animation:fadein .45s var(--ease)}
-  @keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-  .cmd-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-  @media(max-width:720px){.cmd-grid{grid-template-columns:1fr}}
-  .cmd{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;
-    display:flex;gap:14px;align-items:flex-start;transition:.25s var(--ease)}
-  .cmd:hover{border-color:var(--accent2);transform:translateY(-3px)}
-  .cmd .emo{font-size:1.6rem;flex:none;line-height:1}
-  .cmd .say{color:var(--accent);font-weight:700;font-size:.94rem}
-  .cmd .say::before{content:"\201C"}.cmd .say::after{content:"\201D"}
-  .cmd .do{color:var(--muted);font-size:.88rem;margin-top:5px}
+  .tab-panel.active{display:block;animation:pop .4s var(--ease)}
+  @keyframes pop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .cmds{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+  @media(max-width:760px){.cmds{grid-template-columns:1fr}}
+  .cmd{background:#fff;color:var(--ink);border-radius:20px;padding:19px 21px;display:flex;gap:14px;
+    align-items:flex-start;transition:.25s var(--ease)}
+  .cmd:hover{transform:translateY(-4px)}
+  .cmd .emo{font-size:1.5rem;line-height:1;flex:none}
+  .cmd .say2{font-weight:900;font-size:.92rem;letter-spacing:-.01em}
+  .cmd .say2::before{content:"\201C"}.cmd .say2::after{content:"\201D"}
+  .cmd .do{font-size:.82rem;font-weight:700;opacity:.62;margin-top:4px;line-height:1.5}
 
-  /* ---------- SCENARIOS ---------- */
-  .scn-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-  @media(max-width:820px){.scn-grid{grid-template-columns:1fr}}
-  .scn{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:18px;
-    padding:26px 26px 26px 74px;transition:.3s var(--ease)}
-  .scn:hover{border-color:var(--line2);transform:translateY(-3px);background:var(--panel2)}
-  .scn .num{position:absolute;left:24px;top:26px;width:32px;height:32px;border-radius:10px;
-    display:grid;place-items:center;font-weight:800;font-size:.86rem;
-    background:linear-gradient(122deg,var(--accent),var(--accent2));color:#06101a}
-  .scn .who{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent3);
-    font-weight:800;margin-bottom:7px}
-  .scn h3{font-size:1.04rem;margin-bottom:8px}
-  .scn p{color:var(--muted);font-size:.91rem;margin:0}
-  .scn .quote{margin-top:12px;padding-left:13px;border-left:2px solid var(--line2);
-    color:var(--accent);font-size:.87rem;font-style:italic}
-
-  /* ---------- KIOSK ---------- */
-  .kiosk{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-  .kio-two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
-  @media(max-width:820px){.kio-two{grid-template-columns:1fr}}
-  .kio-card{border:1px solid var(--line);border-radius:var(--radius);padding:30px;background:var(--panel)}
-  .kio-card .kh{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-  .kio-card .kh .ki{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;
-    font-size:1.5rem;background:var(--panel2);border:1px solid var(--line);flex:none}
-  .kio-card h3{font-size:1.18rem}
-  .kio-card .kh span{display:block;color:var(--muted2);font-size:.78rem;font-weight:600;margin-top:3px}
-  .kio-card ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}
-  .kio-card li{display:flex;gap:11px;color:var(--muted);font-size:.93rem}
-  .kio-card li::before{content:"→";color:var(--accent);font-weight:800;flex:none}
-  .vs{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-  @media(max-width:880px){.vs{grid-template-columns:1fr 1fr}}
-  @media(max-width:480px){.vs{grid-template-columns:1fr}}
-  .vs-item{border:1px solid var(--line);border-radius:16px;padding:24px;background:var(--panel);
+  /* ══════════ KURUMSAL ══════════ */
+  .kio{border-radius:30px;background:#fff;color:var(--ink);padding:clamp(26px,3vw,36px)}
+  .kio .kh{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .kio .kh .ki{width:50px;height:50px;border-radius:16px;display:grid;place-items:center;font-size:1.5rem;
+    background:var(--cream);flex:none}
+  .kio h3{font-family:var(--display);font-weight:400;font-size:1rem;text-transform:lowercase;margin:0}
+  .kio .kh span{display:block;font-size:.76rem;font-weight:800;opacity:.5;margin-top:3px}
+  .kio ul{list-style:none;margin:0;padding:0;display:grid;gap:11px}
+  .kio li{display:flex;gap:11px;font-size:.87rem;font-weight:700;line-height:1.5;opacity:.8}
+  .kio li::before{content:"→";font-weight:900;flex:none;opacity:.9;color:var(--blue)}
+  .quad{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px}
+  @media(max-width:880px){.quad{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.quad{grid-template-columns:1fr}}
+  .quad .q{border-radius:24px;padding:24px;background:var(--soft);border:2px solid var(--edge);
     text-align:center;transition:.3s var(--ease)}
-  .vs-item:hover{border-color:var(--accent3);transform:translateY(-4px)}
-  .vs-item .vi{font-size:1.7rem}
-  .vs-item .vt{font-weight:800;margin-top:12px;font-size:.98rem}
-  .vs-item .vd{color:var(--muted);font-size:.85rem;margin-top:6px}
+  .quad .q:hover{transform:translateY(-4px)}
+  .quad .qi{font-size:1.6rem}
+  .quad .qt{font-family:var(--display);font-weight:400;font-size:.82rem;text-transform:lowercase;margin-top:11px}
+  .quad .qd{font-size:.8rem;font-weight:700;opacity:.75;margin-top:7px;line-height:1.5}
 
-  /* ---------- APP ---------- */
-  .app-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:44px;align-items:center}
-  @media(max-width:900px){.app-grid{grid-template-columns:1fr;gap:30px}}
-  .app-shot{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
-    background:var(--panel);box-shadow:0 34px 66px -34px rgba(0,0,0,.85)}
-  .app-shot img{display:block;width:100%;height:auto}
-  .ticks{list-style:none;padding:0;margin:0 0 26px;display:grid;gap:11px}
-  .ticks li{display:flex;align-items:flex-start;gap:11px;font-size:.96rem;color:var(--muted)}
+  /* ══════════ UYGULAMA ══════════ */
+  .app{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);align-items:center}
+  @media(max-width:900px){.app{grid-template-columns:1fr}}
+  .shot{border-radius:26px;overflow:hidden;background:#fff;padding:10px;
+    box-shadow:0 30px 60px -34px rgba(0,0,0,.6)}
+  .shot img{display:block;width:100%;height:auto;border-radius:18px}
+  .ticks{list-style:none;padding:0;margin:0 0 24px;display:grid;gap:10px}
+  .ticks li{display:flex;gap:11px;font-size:.9rem;font-weight:700;line-height:1.5}
   .ticks li::before{content:"✓";display:grid;place-items:center;width:21px;height:21px;border-radius:50%;
-    background:rgba(75,227,180,.15);color:var(--accent3);font-weight:800;font-size:.74rem;flex:none;margin-top:3px}
-  .btn.dl{flex-direction:column;align-items:flex-start;gap:3px;padding:15px 28px}
-  .btn.dl small{font-weight:600;font-size:.75rem;opacity:.75}
-  .dl-note{margin-top:18px;padding:15px 17px;border-radius:13px;font-size:.85rem;
-    color:var(--muted);background:rgba(255,180,92,.07);border:1px solid rgba(255,180,92,.26)}
-  .dl-note b{color:var(--warm)}
-  .microtrust{color:var(--muted2);font-size:.82rem;margin-top:16px}
+    background:#fff;color:var(--blue);font-weight:900;font-size:.72rem;flex:none;margin-top:2px}
+  .btn{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;padding:15px 27px;
+    border-radius:999px;background:#fff;color:var(--ink);font-weight:900;font-size:.95rem;
+    border:2px solid #fff;transition:.26s var(--ease)}
+  .btn:hover{transform:translateY(-3px);box-shadow:0 16px 32px -16px rgba(0,0,0,.55)}
+  .btn small{font-weight:800;font-size:.72rem;opacity:.5}
+  .btn.line{background:transparent;color:inherit;border-color:var(--edge);flex-direction:row;
+    align-items:center;gap:9px}
+  .btn.line:hover{background:#fff;color:var(--ink);border-color:#fff}
+  .dl-note{margin-top:16px;padding:15px 17px;border-radius:18px;font-size:.82rem;font-weight:700;
+    line-height:1.55;background:var(--soft);border:2px solid var(--edge)}
+  .micro{font-size:.8rem;font-weight:800;opacity:.8;margin-top:14px}
 
-  /* ---------- SOON / ACCESS ---------- */
-  .soon-box{position:relative;overflow:hidden;text-align:center;border:1px solid var(--line);
-    border-radius:28px;padding:clamp(40px,6vw,72px) clamp(24px,4vw,52px);
-    background:radial-gradient(620px 340px at 50% 0%,rgba(139,123,247,.18),transparent 66%),var(--panel)}
-  .soon-box h2{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800}
-  .soon-box .big{font-size:clamp(2.4rem,7vw,4rem);font-weight:800;margin:22px 0 6px;
-    background:linear-gradient(104deg,var(--accent),var(--accent2) 55%,var(--accent3));
-    -webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.03em}
-  .soon-box p{color:var(--muted);max-width:52ch;margin:16px auto 0}
-  .phases{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:40px 0 36px;text-align:left}
-  @media(max-width:760px){.phases{grid-template-columns:1fr}}
-  .phase{border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--bg2)}
-  .phase.now{border-color:var(--accent);background:linear-gradient(180deg,rgba(92,201,245,.09),var(--bg2))}
-  .phase .pst{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800;
-    color:var(--muted2);display:flex;align-items:center;gap:8px}
-  .phase.now .pst{color:var(--accent)}
-  .phase.now .pst i{width:7px;height:7px;border-radius:50%;background:var(--accent);
-    box-shadow:0 0 10px var(--accent);animation:breathe 2s infinite;font-style:normal}
-  .phase h4{margin:12px 0 6px;font-size:1.02rem;font-weight:800}
-  .phase p{color:var(--muted);font-size:.87rem;margin:0;max-width:none}
+  /* ══════════ YOL HARİTASI ══════════ */
+  .phases{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:800px){.phases{grid-template-columns:1fr}}
+  .phase{border-radius:26px;padding:26px;background:var(--soft);border:2px solid var(--edge)}
+  .phase.now{background:#fff;color:var(--ink);border-color:#fff}
+  .phase .st{font-family:var(--display);font-size:.62rem;text-transform:uppercase;letter-spacing:.15em;
+    opacity:.6;display:flex;align-items:center;gap:8px}
+  .phase.now .st{opacity:1;color:var(--blue)}
+  .phase.now .st i{width:8px;height:8px;border-radius:50%;background:var(--blue);font-style:normal;
+    animation:blink 2s infinite}
+  .phase h4{margin:13px 0 7px;font-size:1rem;font-weight:900;letter-spacing:-.01em}
+  .phase p{margin:0;font-size:.84rem;font-weight:700;line-height:1.55;opacity:.75}
 
-  /* ---------- FAQ ---------- */
-  .faq{max-width:800px;margin:0 auto;display:grid;gap:12px}
-  details{background:var(--panel);border:1px solid var(--line);border-radius:15px;
-    padding:4px 22px;transition:.25s var(--ease)}
-  details[open]{border-color:var(--accent2);background:var(--panel2)}
-  summary{cursor:pointer;padding:18px 0;font-weight:700;list-style:none;display:flex;
-    justify-content:space-between;align-items:center;gap:16px;font-size:.99rem}
+  /* ══════════ SSS ══════════ */
+  .faq{display:grid;gap:11px;max-width:860px}
+  details{background:#fff;color:var(--ink);border-radius:20px;padding:2px 22px;transition:.25s var(--ease)}
+  summary{cursor:pointer;padding:18px 0;font-weight:900;font-size:.96rem;list-style:none;display:flex;
+    justify-content:space-between;align-items:center;gap:16px;letter-spacing:-.01em}
   summary::-webkit-details-marker{display:none}
-  summary::after{content:"+";color:var(--accent);font-size:1.45rem;font-weight:300;flex:none;
-    transition:transform .25s var(--ease)}
+  summary::after{content:"+";font-size:1.5rem;font-weight:400;flex:none;color:var(--blue);
+    font-family:var(--display);transition:transform .25s var(--ease)}
   details[open] summary::after{content:"–"}
-  details p{margin:0 0 20px;color:var(--muted);font-size:.94rem}
+  details p{margin:0 0 20px;font-size:.88rem;font-weight:700;line-height:1.6;opacity:.72}
 
-  /* ---------- FOOTER ---------- */
-  footer{border-top:1px solid var(--line);padding:40px 0;color:var(--muted2);font-size:.87rem}
-  footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-  footer a{color:var(--accent)}
+  /* ══════════ CTA + FOOTER ══════════ */
+  .cta{text-align:center}
+  .cta .mega{margin-bottom:22px}
+  .cta .note{margin-inline:auto;text-align:center}
+  .cta-btn{display:inline-flex;align-items:center;gap:12px;margin-top:30px;padding:19px 36px;
+    border-radius:999px;background:var(--ink);color:#fff;font-weight:900;font-size:1.05rem;
+    transition:.28s var(--ease)}
+  .cta-btn:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 20px 40px -18px rgba(0,0,0,.6)}
+  .cta-btn .arw{transition:transform .28s var(--ease)}
+  .cta-btn:hover .arw{transform:translateX(5px)}
 
-  /* ---------- REVEAL ---------- */
-  .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
-  .reveal.in{opacity:1;transform:none}
+  footer{position:relative;background:var(--lime);color:#fff;overflow:hidden;padding:clamp(56px,7vw,90px) 0 34px}
+  .foot-word{font-family:var(--display);font-size:clamp(4rem,20vw,17rem);line-height:.8;
+    text-transform:lowercase;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.5);
+    margin:0 0 34px;user-select:none}
+  .foot-grid{display:flex;flex-wrap:wrap;gap:26px 46px;justify-content:space-between;
+    align-items:flex-start;border-top:2px solid rgba(255,255,255,.35);padding-top:26px}
+  .foot-grid nav2{display:block}
+  .foot-links{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:.85rem;font-weight:800}
+  .foot-links a{opacity:.85;transition:opacity .2s}
+  .foot-links a:hover{opacity:1;text-decoration:underline}
+  .foot-meta{font-size:.8rem;font-weight:800;opacity:.85}
+
+  /* ══════════ REVEAL ══════════ */
+  .rv{opacity:0;transform:translateY(26px);transition:opacity .75s var(--ease),transform .75s var(--ease)}
+  .rv.in{opacity:1;transform:none}
   @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
       transition-duration:.01ms!important;scroll-behavior:auto!important}
-    .reveal{opacity:1;transform:none}
-    .rise{opacity:1;transform:none}
+    .rv{opacity:1;transform:none}
   }
 </style>
 </head>
 <body>
 
-<nav id="nav">
-  <div class="wrap-wide">
-    <a class="brand" href="#top"><span class="dot"></span> İva</a>
-    <div class="nav-links">
-      <a href="#neden">Neden İva?</a>
-      <a href="#tasarim">Tasarım</a>
-      <a href="#yetenekler">Neler Yapar?</a>
-      <a href="#senaryolar">Senaryolar</a>
-      <a href="#kurumsal">Kurumsal</a>
-      <a href="#sss">SSS</a>
-    </div>
-    <a class="nav-cta" href="#yakinda">Haberdar Ol</a>
+<nav id="nav" data-on="light">
+  <div class="wrap">
+    <a class="mark" href="#top" aria-label="İva ana sayfa">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <rect class="face" x="3" y="8" width="34" height="25" rx="9"/>
+        <circle class="eye" cx="15" cy="19.5" r="2.9"/>
+        <circle class="eye" cx="25" cy="19.5" r="2.9"/>
+        <path class="eye" d="M16.5 26.5c1.6 1.6 5.4 1.6 7 0" stroke="currentColor" fill="none"/>
+      </svg>
+    </a>
+    <a class="pill" href="waitlist.html">bekleme listesi <span class="arw">→</span></a>
   </div>
 </nav>
 
 <!-- ══════════ HERO ══════════ -->
-<header class="hero" id="top">
-  <div class="aurora"><span></span><span></span><span></span></div>
-  <div class="grid-lines"></div>
+<header class="stage blue hero" id="top" data-nav="light">
+  <div class="tiles" aria-hidden="true">
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+  </div>
 
-  <div class="wrap-wide">
-    <div class="hero-grid">
+  <div class="wrap">
+    <div class="hero-stage">
+      <model-viewer id="mvHero"
+        src="models/v2-closed.glb"
+        alt="İva masaüstü asistanı — 3B model"
+        camera-orbit="-26deg 76deg auto"
+        field-of-view="30deg"
+        camera-controls disable-zoom disable-pan interaction-prompt="none"
+        environment-image="neutral" shadow-intensity="0.85" shadow-softness="1"
+        exposure="1.2" loading="eager">
+        <div slot="poster" class="mv-fallback">iva yükleniyor…</div>
+      </model-viewer>
+    </div>
+
+    <div class="hero-foot">
       <div>
-        <div class="soon-chip rise d1"><i></i> Geliştirme aşamasında · Çok yakında</div>
-        <h1 class="rise d2">Sen konuş,<br><span class="grad">İva halletsin.</span></h1>
-        <p class="lead rise d3">
-          Tamamen Türkçe konuşan bir masaüstü asistanı. Not alır, hatırlatır, yönlendirir —
-          klavyeye dokunmadan, ekrana basmadan. Masanda, kliniğin danışmasında ya da
-          AVM'nin ortasında.
-        </p>
-        <div class="hero-actions rise d4">
-          <a class="btn primary" href="#yakinda">Çıkınca Haber Ver</a>
-          <a class="btn ghost" href="#tasarim">Tasarımı İncele</a>
-        </div>
-        <div class="hero-meta rise d5">
-          <span>🇹🇷 <b>Baştan sona Türkçe</b></span>
-          <span>🔒 <b>Veri cihazda kalabilir</b></span>
-          <span>🔊 <b>Dokunmatik ekran gerekmez</b></span>
-        </div>
+        <div class="chip" style="margin-bottom:16px"><i></i> geliştirme aşamasında</div>
+        <p class="lead">sen konuş,<br>iva halletsin.</p>
       </div>
-
-      <div class="hero-stage rise d6">
-        <model-viewer id="mvHero"
-          src="models/v2-closed.glb"
-          alt="İva masaüstü asistanı — 3B model"
-          camera-orbit="-26deg 76deg auto"
-          field-of-view="30deg"
-          camera-controls disable-zoom disable-pan interaction-prompt="none"
-          environment-image="neutral" shadow-intensity="0.9" shadow-softness="1"
-          exposure="1.15" loading="eager">
-          <div slot="poster" class="mv-fallback">İva yükleniyor…</div>
-        </model-viewer>
+      <div class="side">
+        Tamamen Türkçe konuşan bir masaüstü asistanı. Not alır, hatırlatır, yönlendirir —
+        klavyeye dokunmadan, ekrana basmadan.
       </div>
     </div>
   </div>
 
-  <a class="scroll-cue" href="#neden" aria-label="Aşağı kaydır">
-    <span class="mouse"></span>
-    <span>Keşfet</span>
-  </a>
+  <a class="cue" href="#nedir" aria-label="Aşağı kaydır"><span class="m"></span><span>keşfet</span></a>
 </header>
 
-<div class="strip">
-  <div class="wrap">
-    <span>🛠️ <b>Prototip geliştiriliyor</b></span>
-    <span>🎙️ <b>Türkçe sesli etkileşim</b></span>
-    <span>🧩 <b>Açık donanım tabanlı</b></span>
-    <span>🏥 <b>Kurumsal senaryolara uygun</b></span>
+<!-- ══════════ TICKER ══════════ -->
+<div class="ticker" aria-hidden="true">
+  <div class="track">
+    <span>baştan sona türkçe</span><span>dokunmatik ekran gerekmez</span><span>veri cihazda kalabilir</span>
+    <span>esp32-s3 tabanlı</span><span>avuç içi boyutunda</span><span>prototip aşamasında</span>
+    <span>baştan sona türkçe</span><span>dokunmatik ekran gerekmez</span><span>veri cihazda kalabilir</span>
+    <span>esp32-s3 tabanlı</span><span>avuç içi boyutunda</span><span>prototip aşamasında</span>
   </div>
 </div>
 
-<!-- ══════════ NEDEN ══════════ -->
-<section id="neden">
+<!-- ══════════ NEDİR / DOKUNMADAN ══════════ -->
+<section class="stage cream" id="nedir" data-nav="dark">
   <div class="wrap">
-    <div class="head reveal">
-      <div class="eyebrow">Neden İva?</div>
-      <h2>Ekrana bakmadan, elini kullanmadan</h2>
-      <p>Notlar dağılıyor, tarihler unutuluyor, danışmadaki kuyruk uzuyor.
-         İva bunların hepsine tek bir yerden, konuşarak cevap veriyor.</p>
-    </div>
-    <div class="split">
-      <div class="pane bad reveal">
-        <h3>Bugün nasıl oluyor</h3>
+    <h2 class="mega rv">dokun-<br>madan</h2>
+
+    <div class="duo rv">
+      <div class="panel">
+        <h3>bugün nasıl oluyor</h3>
         <ul>
           <li>Toplantı ve derste yazmakla uğraşırken konuşmayı kaçırmak</li>
           <li>Not, hatırlatıcı ve zamanlayıcı için ayrı ayrı uygulamalar</li>
@@ -457,8 +458,8 @@
           <li>İngilizce sesli asistanlarla Türkçe boğuşmak</li>
         </ul>
       </div>
-      <div class="pane good reveal">
-        <h3>İva ile nasıl olacak</h3>
+      <div class="panel solid">
+        <h3>iva ile nasıl olacak</h3>
         <ul>
           <li>Sen dinlerken o not alır — bir cümle söylemen yeter</li>
           <li>Not, görev, hatırlatma ve odak; hepsi tek cihazda</li>
@@ -468,261 +469,214 @@
         </ul>
       </div>
     </div>
+
+    <div class="copy rv">
+      <p class="say">Notlar dağılıyor, tarihler unutuluyor,<br>danışmadaki kuyruk uzuyor.</p>
+      <p class="note">İva bunların hepsine tek bir yerden, konuşarak cevap veriyor. Masanın üstünde
+        duruyor; sen konuşurken dinliyor, yazıya döküyor, zamanı gelince hatırlatıyor.</p>
+      <p class="note">Ekrana bakmak, klavyeye uzanmak ya da bir menüde gezinmek gerekmiyor.
+        Tek yapman gereken cümleyi kurmak.</p>
+    </div>
   </div>
 </section>
 
-<!-- ══════════ ÖZELLİKLER ══════════ -->
-<section style="padding-top:0">
+<!-- ══════════ SENARYOLAR / AVUÇ İÇİ ══════════ -->
+<section class="stage orange" id="senaryolar" data-nav="light">
   <div class="wrap">
-    <div class="head reveal">
-      <div class="eyebrow">Öne Çıkanlar</div>
-      <h2>Küçük bir kutu, epeyce iş</h2>
+    <h2 class="mega rv">avuç-<br>içi</h2>
+  </div>
+
+  <div class="wrap">
+    <div class="gal rv">
+      <div class="gal-track" id="galTrack">
+        <article class="card"><div class="top" style="--cap:#fff3e9">📝</div>
+          <div class="bot"><div class="who">öğrenci</div><h3>Ders anlatılırken not tutmak</h3>
+            <p>Hoca hızlı anlatıyor, yazmaya çalışırken yarısını kaçırıyorsun. İva dinlediklerini yazıya döküyor.</p>
+            <div class="q">"İva, not al: final konuları 4. üniteden başlıyor."</div></div></article>
+
+        <article class="card"><div class="top" style="--cap:#e9f6ff">💼</div>
+          <div class="bot"><div class="who">profesyonel</div><h3>Toplantı çıkışı özet ve aksiyonlar</h3>
+            <p>Toplantı biter bitmez kararları ve kimin ne yapacağını sesle kaydediyorsun.</p>
+            <div class="q">"Toplantı notu: teklif pazartesiye hazırlanacak, sorumlu Ayşe."</div></div></article>
+
+        <article class="card"><div class="top" style="--cap:#f2f0ff">📅</div>
+          <div class="bot"><div class="who">öğrenci</div><h3>Teslim tarihlerini kaçırmamak</h3>
+            <p>Ödev, vize, proje… hepsi söylediğin anda takvimine giriyor, zamanı gelince hatırlatılıyor.</p>
+            <div class="q">"Salı 17.00'de proje teslimi var, bir gün önce hatırlat."</div></div></article>
+
+        <article class="card"><div class="top" style="--cap:#fff0f4">🍅</div>
+          <div class="bot"><div class="who">uzaktan çalışan</div><h3>Odak seansı yönetmek</h3>
+            <p>Telefonu eline almadan Pomodoro başlatıyorsun. İva süreyi tutuyor, molayı hatırlatıyor.</p>
+            <div class="q">"Pomodoro başlat, bittiğinde haber ver."</div></div></article>
+
+        <article class="card"><div class="top" style="--cap:#eafaf3">🗣️</div>
+          <div class="bot"><div class="who">dil öğrenen</div><h3>Her gün 10 dakika pratik</h3>
+            <p>Karşında biri olmadan İngilizce konuşmak zor. İva sohbet ediyor, hatalarını düzeltiyor.</p>
+            <div class="q">"Benimle 10 dakika İngilizce konuş, sonra hatalarımı söyle."</div></div></article>
+
+        <article class="card"><div class="top" style="--cap:#e9f6ff">🏥</div>
+          <div class="bot"><div class="who">sağlık · poliklinik</div><h3>Danışmadaki tekrar eden sorular</h3>
+            <p>Gün boyu yüzlerce kez sorulan yön sorularını İva karşılıyor, personel asıl işine dönüyor.</p>
+            <div class="q">"Kan alma birimi nerede?"</div></div></article>
+
+        <article class="card"><div class="top" style="--cap:#f4fbe7">🧼</div>
+          <div class="bot"><div class="who">sağlık · bekleme salonu</div><h3>Hijyenik bilgilendirme</h3>
+            <p>Ortak dokunulan yüzey yok. Randevu saatini ya da hazırlık talimatını sorman yeterli.</p>
+            <div class="q">"Tahlil öncesi aç kalmam gerekiyor mu?"</div></div></article>
+
+        <article class="card"><div class="top" style="--cap:#fff3e9">🛍️</div>
+          <div class="bot"><div class="who">avm · yönlendirme</div><h3>Mağaza ve kat bulma</h3>
+            <p>Kiosk menüsünde kaybolmak yerine mağazanın adını söylüyorsun; İva yönü tarif ediyor.</p>
+            <div class="q">"Sinema kaçıncı katta, nasıl giderim?"</div></div></article>
+
+        <article class="card"><div class="top" style="--cap:#f2f0ff">♿</div>
+          <div class="bot"><div class="who">erişilebilirlik</div><h3>Ekran okumakta zorlananlar</h3>
+            <p>Görme zorluğu yaşayan ya da küçük yazıları okuyamayan biri için ses en doğal arayüz.</p>
+            <div class="q">"Randevum saat kaçtaydı?"</div></div></article>
+      </div>
+      <div class="gal-nav">
+        <button type="button" id="galPrev" aria-label="Önceki">‹</button>
+        <button type="button" id="galNext" aria-label="Sonraki">›</button>
+      </div>
     </div>
-    <div class="grid">
-      <div class="card reveal"><div class="ico">🎙️</div><h3>Sesle not al</h3>
-        <p>Toplantı, ders, fikir… söyle, İva yazsın. Elin serbest, aklın konuşmada kalsın.</p></div>
-      <div class="card reveal"><div class="ico">📅</div><h3>Görev ve tarih takibi</h3>
-        <p>Ödevler, sınavlar, teslim tarihleri ve yapılacaklar; hepsini kaydeder, takip eder.</p></div>
-      <div class="card reveal"><div class="ico">⏰</div><h3>Zamanında hatırlatır</h3>
-        <p>Bildirim ve hatırlatmalarla hiçbir teslim tarihini ya da randevuyu kaçırma.</p></div>
-      <div class="card reveal"><div class="ico">🍅</div><h3>Odak ve Pomodoro</h3>
-        <p>Çalışma seanslarını başlatır, molalarını hatırlatır, verimini korur.</p></div>
-      <div class="card reveal"><div class="ico">🌍</div><h3>Dil pratiği</h3>
-        <p>İngilizce ve Çince konuşma pratiği, anında çeviri — masanda bir dil partneri.</p></div>
-      <div class="card reveal"><div class="ico">🔒</div><h3>Verin sende kalır</h3>
-        <p>Dilersen tüm veri kendi bilgisayarında çalışır; buluta hiçbir şey gitmez.</p></div>
-      <div class="card reveal"><div class="ico">🗣️</div><h3>Kendi ismini ver</h3>
-        <p>Uyandırma kelimesi senin seçimin — "İva" yerine istediğin ismi birkaç tıkla ata.</p></div>
-      <div class="card reveal"><div class="ico">♿</div><h3>Erişilebilir</h3>
-        <p>Görme zorluğu yaşayan, yaşlı ya da eli dolu olan herkes aynı şekilde kullanabilir.</p></div>
-      <div class="card reveal"><div class="ico">🧩</div><h3>Açık donanım</h3>
-        <p>ESP32-S3 tabanlı, üzerinde çalışılabilir bir mimari. Kapalı kutu değil.</p></div>
+
+    <div class="copy rv">
+      <p class="say">Masanın köşesine sığacak kadar küçük.<br>Günü değiştirecek kadar işe yarar.</p>
+      <p class="note">İva avuç içi büyüklüğünde bir cihaz olarak tasarlanıyor: masanın üstünde,
+        kliniğin danışmasında ya da AVM'nin ortasında aynı işi görecek kadar küçük.</p>
+      <p class="note">Bir kiosk'un kapladığı yere birden fazla İva kurulabilir — üstelik kimsenin
+        ekrana dokunmasına gerek kalmadan.</p>
     </div>
   </div>
 </section>
 
-<!-- ══════════ 3D EXPLORER ══════════ -->
-<section id="tasarim" class="explorer">
-  <div class="wrap-wide">
-    <div class="head reveal">
-      <div class="eyebrow">Tasarım ve Donanım</div>
-      <h2>İçini de göster</h2>
-      <p>Modeli sürükleyerek çevir, yakınlaştır. "Parçalar" görünümüne geçip
-         kutunun içinde ne olduğunu tek tek incele.</p>
-    </div>
+<!-- ══════════ 3B EXPLORER / İÇİNİ AÇ ══════════ -->
+<section class="stage lime" id="tasarim" data-nav="dark">
+  <div class="wrap">
+    <h2 class="mega rv">içini<br>aç</h2>
 
-    <div class="exp-shell reveal">
+    <div class="exp rv">
       <div class="exp-stage">
-        <div class="exp-toggle" role="group" aria-label="Görünüm seçimi">
-          <button id="btnClosed" class="on" type="button">Ürün</button>
-          <button id="btnOpen" type="button">Parçalar</button>
+        <div class="seg" role="group" aria-label="Görünüm seçimi">
+          <button id="btnClosed" class="on" type="button">ürün</button>
+          <button id="btnOpen" type="button">parçalar</button>
         </div>
-
-        <div class="exp-loading" id="expLoading"><div class="spinner"></div></div>
-
+        <div class="exp-load" id="expLoading"><div class="spinner"></div></div>
         <model-viewer id="mvMain"
           src="models/v2-closed.glb"
           alt="İva 3B ürün görünümü"
-          camera-orbit="-26deg 74deg auto"
+          camera-orbit="-26deg 74deg 105%"
           min-camera-orbit="auto auto 0.25m" max-camera-orbit="auto auto 3m"
           field-of-view="32deg"
-          camera-controls touch-action="pan-y"
+          camera-controls disable-zoom touch-action="pan-y"
           auto-rotate auto-rotate-delay="2600" rotation-per-second="12deg"
           environment-image="neutral" shadow-intensity="1" shadow-softness="1"
-          exposure="1.15" interaction-prompt="none" loading="lazy">
+          exposure="1.2" interaction-prompt="none" loading="lazy">
         </model-viewer>
-
-        <div class="exp-hint" id="expHint">Sürükle · Yakınlaştır</div>
+        <div class="hint" id="expHint">sürükleyip çevir</div>
       </div>
 
-      <div class="parts-list">
-        <h3>Kutunun içinde</h3>
+      <div class="parts">
+        <h3>kutunun içinde</h3>
         <div class="sub">Bir parçaya tıkla, modelde nerede olduğunu göster.</div>
         <ol id="partsOl"></ol>
-        <div class="parts-note">
-          Model, prototipin güncel 3B tasarımından alındı. Renkler parçaları
-          ayırt etmek için verildi; nihai üründe gövde tek renk olacak.
-          Parça isimleri ve donanım listesi prototip sürecinde değişebilir.
+        <div class="foot">
+          Model, prototipin güncel 3B tasarımından alındı. Renkler parçaları ayırt etmek için verildi;
+          nihai üründe gövde tek renk olacak. Parça isimleri prototip sürecinde değişebilir.
         </div>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- ══════════ YETENEKLER ══════════ -->
-<section id="yetenekler">
-  <div class="wrap">
-    <div class="head reveal">
-      <div class="eyebrow">Neler Yapar?</div>
-      <h2>Bir cümle söyle, iş bitsin</h2>
-      <p>Bir kategori seç, İva'ya nasıl seslenebileceğini gör.</p>
-    </div>
-
-    <div class="tabs reveal">
-      <button class="tab-btn active" data-tab="t-work" type="button">✅ Verimlilik</button>
-      <button class="tab-btn" data-tab="t-dil" type="button">🗣️ Dil ve Öğrenme</button>
-      <button class="tab-btn" data-tab="t-pc" type="button">💻 Bilgisayar Kontrolü</button>
-      <button class="tab-btn" data-tab="t-info" type="button">🧮 Hesap ve Bilgi</button>
-      <button class="tab-btn" data-tab="t-fun" type="button">🎮 Mola</button>
-    </div>
-
-    <div class="tab-panel active" id="t-work">
-      <div class="cmd-grid">
-        <div class="cmd"><span class="emo">📝</span><div><div class="say">İva, not al: proje teslimi cumaya çekildi</div><div class="do">Notunu anında kaydeder, istersen telefonuna iletir.</div></div></div>
-        <div class="cmd"><span class="emo">📚</span><div><div class="say">Yarınki vize sınavımı hatırlat</div><div class="do">Hatırlatma kurar, zamanı gelince seni uyarır.</div></div></div>
-        <div class="cmd"><span class="emo">✅</span><div><div class="say">Görev ekle: makale taslağını bitir</div><div class="do">Yapılacaklar listene ekler, bitince işaretler.</div></div></div>
-        <div class="cmd"><span class="emo">🍅</span><div><div class="say">Pomodoro başlat</div><div class="do">25 dakikalık odak sayacı başlatır, molanı hatırlatır.</div></div></div>
-        <div class="cmd"><span class="emo">📔</span><div><div class="say">Bugünkü çalışmalarımı günlüğüme yaz</div><div class="do">Günün özetini tutar, ne yaptığını takip edersin.</div></div></div>
-        <div class="cmd"><span class="emo">🔥</span><div><div class="say">Bugün 2 saat çalıştım, alışkanlığa ekle</div><div class="do">Çalışma serilerini takip eder, motive tutar.</div></div></div>
-      </div>
-    </div>
-
-    <div class="tab-panel" id="t-dil">
-      <div class="cmd-grid">
-        <div class="cmd"><span class="emo">🇬🇧</span><div><div class="say">İva, benimle İngilizce pratik yap</div><div class="do">Seninle İngilizce sohbet eder, hatalarını nazikçe düzeltir.</div></div></div>
-        <div class="cmd"><span class="emo">🇨🇳</span><div><div class="say">Bunu Çince nasıl söylerim?</div><div class="do">Kelime ve cümleleri telaffuzuyla birlikte öğretir.</div></div></div>
-        <div class="cmd"><span class="emo">📖</span><div><div class="say">Bana 5 yeni İngilizce kelime öğret</div><div class="do">Örnek cümlelerle kelime dağarcığını büyütür.</div></div></div>
-        <div class="cmd"><span class="emo">🔤</span><div><div class="say">Şu cümleyi İngilizceye çevir</div><div class="do">Anında Türkçe ↔ İngilizce / Çince çeviri yapar.</div></div></div>
-      </div>
-    </div>
-
-    <div class="tab-panel" id="t-pc">
-      <div class="cmd-grid">
-        <div class="cmd"><span class="emo">🌐</span><div><div class="say">Gmail'i aç</div><div class="do">İstediğin siteyi tarayıcında açar.</div></div></div>
-        <div class="cmd"><span class="emo">🔎</span><div><div class="say">Web'de kaynak makale ara</div><div class="do">Senin için arama yapar, sonucu açar.</div></div></div>
-        <div class="cmd"><span class="emo">▶️</span><div><div class="say">Odaklanmak için bir müzik aç</div><div class="do">Bulur ve bilgisayarında çalar.</div></div></div>
-        <div class="cmd"><span class="emo">📲</span><div><div class="say">Bu notları telefonuma gönder</div><div class="do">Notunu ya da mesajını telefonuna iletir.</div></div></div>
-      </div>
-    </div>
-
-    <div class="tab-panel" id="t-info">
-      <div class="cmd-grid">
-        <div class="cmd"><span class="emo">🧮</span><div><div class="say">247 çarpı 18 kaç eder?</div><div class="do">İşlemleri anında sesli olarak çözer.</div></div></div>
-        <div class="cmd"><span class="emo">🌦️</span><div><div class="say">Bugün İstanbul'da hava nasıl?</div><div class="do">Güncel hava durumunu söyler.</div></div></div>
-        <div class="cmd"><span class="emo">🕐</span><div><div class="say">Saat kaç, teslime kaç gün var?</div><div class="do">Tarih ve saati anında bildirir.</div></div></div>
-        <div class="cmd"><span class="emo">😊</span><div><div class="say">Bugün verimliydim, moralim iyi</div><div class="do">Ruh halini kaydeder, zamanla geçmişini tutar.</div></div></div>
-      </div>
-    </div>
-
-    <div class="tab-panel" id="t-fun">
-      <div class="cmd-grid">
-        <div class="cmd"><span class="emo">🎮</span><div><div class="say">Molada benimle bir oyun oyna</div><div class="do">Sesli kelime ve bilgi oyunlarıyla zihnini dinlendirir.</div></div></div>
-        <div class="cmd"><span class="emo">🎲</span><div><div class="say">Zar at</div><div class="do">Rastgele zar ya da sayı — karar vermene yardım eder.</div></div></div>
-        <div class="cmd"><span class="emo">😂</span><div><div class="say">Bana bir şaka yap</div><div class="do">Kısa bir espriyle stres molası verir.</div></div></div>
-        <div class="cmd"><span class="emo">😮</span><div><div class="say">Duygulu yüzüyle eşlik eder</div><div class="do">Konuşmana göre güler, şaşırır, göz kırpar.</div></div></div>
-      </div>
+    <div class="copy rv" style="margin-top:clamp(30px,4vw,52px)">
+      <p class="say">Kapalı kutu değil.<br>Ne olduğunu görebilirsin.</p>
+      <p class="note">İva, ESP32-S3 tabanlı açık bir donanım mimarisi üzerine kuruluyor: mikrofon dizisi,
+        hoparlör ve küçük bir OLED ekran.</p>
+      <p class="note">Modeli sürükleyerek çevir, "parçalar" görünümüne geçip kutunun içinde ne olduğunu
+        tek tek incele.</p>
     </div>
   </div>
 </section>
 
-<!-- ══════════ SENARYOLAR ══════════ -->
-<section id="senaryolar" class="explorer" style="background:var(--bg2)">
+<!-- ══════════ KOMUTLAR / TEK CÜMLE ══════════ -->
+<section class="stage violet" id="yetenekler" data-nav="light">
   <div class="wrap">
-    <div class="head reveal">
-      <div class="eyebrow">Kullanım Senaryoları</div>
-      <h2>İva günün neresine giriyor?</h2>
-      <p>Masa başından hastane danışmasına kadar, on somut an.</p>
+    <h2 class="mega rv">tek<br>cümle</h2>
+
+    <div class="tabs rv">
+      <button class="tab-btn active" data-tab="t-work" type="button">✅ verimlilik</button>
+      <button class="tab-btn" data-tab="t-dil" type="button">🗣️ dil ve öğrenme</button>
+      <button class="tab-btn" data-tab="t-pc" type="button">💻 bilgisayar kontrolü</button>
+      <button class="tab-btn" data-tab="t-info" type="button">🧮 hesap ve bilgi</button>
+      <button class="tab-btn" data-tab="t-fun" type="button">🎮 mola</button>
     </div>
 
-    <div class="scn-grid">
-      <div class="scn reveal"><span class="num">01</span>
-        <div class="who">Öğrenci</div>
-        <h3>Ders anlatılırken not tutmak</h3>
-        <p>Hoca hızlı anlatıyor, yazmaya çalışırken yarısını kaçırıyorsun.
-           İva dinlediklerini yazıya döküyor, sen sadece takip ediyorsun.</p>
-        <div class="quote">"İva, not al: final konuları 4. üniteden başlıyor."</div>
+    <div class="rv">
+      <div class="tab-panel active" id="t-work">
+        <div class="cmds">
+          <div class="cmd"><span class="emo">📝</span><div><div class="say2">İva, not al: proje teslimi cumaya çekildi</div><div class="do">Notunu anında kaydeder, istersen telefonuna iletir.</div></div></div>
+          <div class="cmd"><span class="emo">📚</span><div><div class="say2">Yarınki vize sınavımı hatırlat</div><div class="do">Hatırlatma kurar, zamanı gelince seni uyarır.</div></div></div>
+          <div class="cmd"><span class="emo">✅</span><div><div class="say2">Görev ekle: makale taslağını bitir</div><div class="do">Yapılacaklar listene ekler, bitince işaretler.</div></div></div>
+          <div class="cmd"><span class="emo">🍅</span><div><div class="say2">Pomodoro başlat</div><div class="do">25 dakikalık odak sayacı başlatır, molanı hatırlatır.</div></div></div>
+          <div class="cmd"><span class="emo">📔</span><div><div class="say2">Bugünkü çalışmalarımı günlüğüme yaz</div><div class="do">Günün özetini tutar, ne yaptığını takip edersin.</div></div></div>
+          <div class="cmd"><span class="emo">🔥</span><div><div class="say2">Bugün 2 saat çalıştım, alışkanlığa ekle</div><div class="do">Çalışma serilerini takip eder, motive tutar.</div></div></div>
+        </div>
       </div>
 
-      <div class="scn reveal"><span class="num">02</span>
-        <div class="who">Profesyonel</div>
-        <h3>Toplantı çıkışı özet ve aksiyonlar</h3>
-        <p>Toplantı biter bitmez kararları ve kimin ne yapacağını sesle kaydediyorsun.
-           Bilgisayarı açıp not tutmaya gerek kalmıyor.</p>
-        <div class="quote">"Toplantı notu: teklif pazartesiye kadar hazırlanacak, sorumlu Ayşe."</div>
+      <div class="tab-panel" id="t-dil">
+        <div class="cmds">
+          <div class="cmd"><span class="emo">🇬🇧</span><div><div class="say2">İva, benimle İngilizce pratik yap</div><div class="do">Seninle İngilizce sohbet eder, hatalarını nazikçe düzeltir.</div></div></div>
+          <div class="cmd"><span class="emo">🇨🇳</span><div><div class="say2">Bunu Çince nasıl söylerim?</div><div class="do">Kelime ve cümleleri telaffuzuyla birlikte öğretir.</div></div></div>
+          <div class="cmd"><span class="emo">📖</span><div><div class="say2">Bana 5 yeni İngilizce kelime öğret</div><div class="do">Örnek cümlelerle kelime dağarcığını büyütür.</div></div></div>
+          <div class="cmd"><span class="emo">🔤</span><div><div class="say2">Şu cümleyi İngilizceye çevir</div><div class="do">Anında Türkçe ↔ İngilizce / Çince çeviri yapar.</div></div></div>
+        </div>
       </div>
 
-      <div class="scn reveal"><span class="num">03</span>
-        <div class="who">Öğrenci</div>
-        <h3>Teslim tarihlerini kaçırmamak</h3>
-        <p>Ödev, vize, proje… hepsini söylediğin anda takvimine giriyor.
-           Zamanı gelince masandan sesli olarak hatırlatıyor.</p>
-        <div class="quote">"Salı 17.00'de bitirme projesi teslimi var, bir gün önce hatırlat."</div>
+      <div class="tab-panel" id="t-pc">
+        <div class="cmds">
+          <div class="cmd"><span class="emo">🌐</span><div><div class="say2">Gmail'i aç</div><div class="do">İstediğin siteyi tarayıcında açar.</div></div></div>
+          <div class="cmd"><span class="emo">🔎</span><div><div class="say2">Web'de kaynak makale ara</div><div class="do">Senin için arama yapar, sonucu açar.</div></div></div>
+          <div class="cmd"><span class="emo">▶️</span><div><div class="say2">Odaklanmak için bir müzik aç</div><div class="do">Bulur ve bilgisayarında çalar.</div></div></div>
+          <div class="cmd"><span class="emo">📲</span><div><div class="say2">Bu notları telefonuma gönder</div><div class="do">Notunu ya da mesajını telefonuna iletir.</div></div></div>
+        </div>
       </div>
 
-      <div class="scn reveal"><span class="num">04</span>
-        <div class="who">Uzaktan Çalışan</div>
-        <h3>Odak seansı yönetmek</h3>
-        <p>Telefonu eline almadan Pomodoro başlatıyorsun. İva süreyi tutuyor,
-           molayı hatırlatıyor, gün sonunda kaç seans yaptığını söylüyor.</p>
-        <div class="quote">"Pomodoro başlat, bittiğinde haber ver."</div>
+      <div class="tab-panel" id="t-info">
+        <div class="cmds">
+          <div class="cmd"><span class="emo">🧮</span><div><div class="say2">247 çarpı 18 kaç eder?</div><div class="do">İşlemleri anında sesli olarak çözer.</div></div></div>
+          <div class="cmd"><span class="emo">🌦️</span><div><div class="say2">Bugün İstanbul'da hava nasıl?</div><div class="do">Güncel hava durumunu söyler.</div></div></div>
+          <div class="cmd"><span class="emo">🕐</span><div><div class="say2">Saat kaç, teslime kaç gün var?</div><div class="do">Tarih ve saati anında bildirir.</div></div></div>
+          <div class="cmd"><span class="emo">😊</span><div><div class="say2">Bugün verimliydim, moralim iyi</div><div class="do">Ruh halini kaydeder, zamanla geçmişini tutar.</div></div></div>
+        </div>
       </div>
 
-      <div class="scn reveal"><span class="num">05</span>
-        <div class="who">Dil Öğrenen</div>
-        <h3>Her gün 10 dakika konuşma pratiği</h3>
-        <p>Karşında biri olmadan İngilizce konuşmak zor. İva sohbet ediyor,
-           hatalarını düzeltiyor, yeni kelimeleri tekrar ettiriyor.</p>
-        <div class="quote">"Benimle 10 dakika İngilizce konuş, sonra hatalarımı söyle."</div>
+      <div class="tab-panel" id="t-fun">
+        <div class="cmds">
+          <div class="cmd"><span class="emo">🎮</span><div><div class="say2">Molada benimle bir oyun oyna</div><div class="do">Sesli kelime ve bilgi oyunlarıyla zihnini dinlendirir.</div></div></div>
+          <div class="cmd"><span class="emo">🎲</span><div><div class="say2">Zar at</div><div class="do">Rastgele zar ya da sayı — karar vermene yardım eder.</div></div></div>
+          <div class="cmd"><span class="emo">😂</span><div><div class="say2">Bana bir şaka yap</div><div class="do">Kısa bir espriyle stres molası verir.</div></div></div>
+          <div class="cmd"><span class="emo">😮</span><div><div class="say2">Duygulu yüzüyle eşlik eder</div><div class="do">Konuşmana göre güler, şaşırır, göz kırpar.</div></div></div>
+        </div>
       </div>
+    </div>
 
-      <div class="scn reveal"><span class="num">06</span>
-        <div class="who">Sağlık · Poliklinik</div>
-        <h3>Danışmadaki tekrar eden sorular</h3>
-        <p>"Kardiyoloji hangi katta?", "Kan alma nereye?" gibi sorular gün boyu
-           yüzlerce kez soruluyor. İva bunları karşılıyor, personel asıl işine dönüyor.</p>
-        <div class="quote">"Kan alma birimi nerede?" → "Zemin kat, ana koridorun sonunda, sol tarafta."</div>
-      </div>
-
-      <div class="scn reveal"><span class="num">07</span>
-        <div class="who">Sağlık · Bekleme Salonu</div>
-        <h3>Hijyenik, dokunmadan bilgilendirme</h3>
-        <p>Hastane ortamında ortak dokunulan yüzey istemezsin. İva'ya hiç dokunmadan
-           randevu saatini, sıra durumunu veya hazırlık talimatını sorabilirsin.</p>
-        <div class="quote">"Tahlil öncesi aç kalmam gerekiyor mu?"</div>
-      </div>
-
-      <div class="scn reveal"><span class="num">08</span>
-        <div class="who">AVM · Yönlendirme</div>
-        <h3>Mağaza ve kat bulma</h3>
-        <p>Dokunmatik kiosk ekranında menüde kaybolmak yerine mağazanın adını
-           söylüyorsun. İva kat, yön ve en yakın yürüyen merdiveni tarif ediyor.</p>
-        <div class="quote">"Sinema kaçıncı katta, nasıl giderim?"</div>
-      </div>
-
-      <div class="scn reveal"><span class="num">09</span>
-        <div class="who">AVM · Kampanya</div>
-        <h3>Etkinlik ve kampanya bilgisi</h3>
-        <p>Bugünkü indirimler, etkinlik saatleri, otopark ücreti gibi sorular
-           anında cevaplanıyor. Bilgi değiştiğinde tek yerden güncelleniyor.</p>
-        <div class="quote">"Bu hafta sonu çocuklara yönelik bir etkinlik var mı?"</div>
-      </div>
-
-      <div class="scn reveal"><span class="num">10</span>
-        <div class="who">Erişilebilirlik</div>
-        <h3>Ekran okumakta zorlananlar için</h3>
-        <p>Görme zorluğu yaşayan, yaşı ilerlemiş ya da küçük yazıları okuyamayan
-           biri için sesli etkileşim en doğal arayüz. Ekrana bakmak gerekmiyor.</p>
-        <div class="quote">"Randevum saat kaçtaydı?"</div>
-      </div>
+    <div class="rv" style="margin-top:clamp(34px,4vw,52px)">
+      <p class="say" style="max-width:32ch">Konuştuğun şeye göre yüzü değişir.</p>
+      <div class="faces" id="faces" aria-hidden="true"></div>
+      <p class="note">Küçük OLED ekranındaki yüz, konuşmanın gidişatına göre gülüyor, şaşırıyor,
+        göz kırpıyor. Cihazla konuşmak bir menüyle uğraşmaktan çok, birine seslenmeye benziyor.</p>
     </div>
   </div>
 </section>
 
-<!-- ══════════ KURUMSAL / KIOSK ══════════ -->
-<section id="kurumsal" class="kiosk">
+<!-- ══════════ KURUMSAL ══════════ -->
+<section class="stage cream" id="kurumsal" data-nav="dark">
   <div class="wrap">
-    <div class="head reveal">
-      <div class="eyebrow">Kurumsal Kullanım</div>
-      <h2>Dokunmatik kiosk'a sesli alternatif</h2>
-      <p>Büyük ekranlı yönlendirme kiosk'ları pahalı, yer kaplıyor ve herkes aynı
-         yüzeye dokunuyor. Aynı işi konuşarak yapmak çoğu senaryoda daha hızlı,
-         daha hijyenik ve daha erişilebilir.</p>
-    </div>
+    <h2 class="mega rv">kurum-<br>sal</h2>
 
-    <div class="kio-two">
-      <div class="kio-card reveal">
+    <div class="duo rv">
+      <div class="kio">
         <div class="kh"><span class="ki">🏥</span>
-          <div><h3>Sağlık kuruluşları</h3><span>Hastane · poliklinik · laboratuvar</span></div></div>
+          <div><h3>sağlık kuruluşları</h3><span>hastane · poliklinik · laboratuvar</span></div></div>
         <ul>
           <li>Bölüm, kat ve birim yönlendirmesi — danışmadaki yükü azaltır</li>
           <li>Tahlil öncesi hazırlık talimatlarını sesli anlatır</li>
@@ -732,10 +686,9 @@
           <li>Veriler kurum içinde kalabilir; bulut zorunlu değil</li>
         </ul>
       </div>
-
-      <div class="kio-card reveal">
+      <div class="kio">
         <div class="kh"><span class="ki">🛍️</span>
-          <div><h3>AVM ve perakende</h3><span>Alışveriş merkezi · mağaza · fuar</span></div></div>
+          <div><h3>avm ve perakende</h3><span>alışveriş merkezi · mağaza · fuar</span></div></div>
         <ul>
           <li>Mağaza, kat ve marka arama — menüde gezinmeye gerek yok</li>
           <li>Güncel kampanya, etkinlik ve seans saatleri</li>
@@ -747,148 +700,171 @@
       </div>
     </div>
 
-    <div class="vs">
-      <div class="vs-item reveal"><div class="vi">🧼</div><div class="vt">Hijyen</div>
-        <div class="vd">Kimse ortak bir ekrana dokunmaz. Sağlık ortamında tek başına belirleyici bir fark.</div></div>
-      <div class="vs-item reveal"><div class="vi">♿</div><div class="vt">Erişilebilirlik</div>
-        <div class="vd">Görme zorluğu, yaş, boy veya tekerlekli sandalye yüksekliği engel olmaz.</div></div>
-      <div class="vs-item reveal"><div class="vi">⚡</div><div class="vt">Hız</div>
-        <div class="vd">Beş menü derinliği yerine tek cümle. Ortalama etkileşim süresi kısalır.</div></div>
-      <div class="vs-item reveal"><div class="vi">📐</div><div class="vt">Alan ve maliyet</div>
-        <div class="vd">Avuç içi büyüklüğünde. Bir kiosk'un yerine birden fazla nokta kurulabilir.</div></div>
+    <div class="quad rv">
+      <div class="q"><div class="qi">🧼</div><div class="qt">hijyen</div>
+        <div class="qd">Kimse ortak bir ekrana dokunmaz. Sağlık ortamında tek başına belirleyici bir fark.</div></div>
+      <div class="q"><div class="qi">♿</div><div class="qt">erişilebilirlik</div>
+        <div class="qd">Görme zorluğu, yaş, boy veya tekerlekli sandalye yüksekliği engel olmaz.</div></div>
+      <div class="q"><div class="qi">⚡</div><div class="qt">hız</div>
+        <div class="qd">Beş menü derinliği yerine tek cümle. Ortalama etkileşim süresi kısalır.</div></div>
+      <div class="q"><div class="qi">📐</div><div class="qt">alan ve maliyet</div>
+        <div class="qd">Avuç içi büyüklüğünde. Bir kiosk'un yerine birden fazla nokta kurulabilir.</div></div>
+    </div>
+
+    <div class="copy rv" style="margin-top:clamp(30px,4vw,48px)">
+      <p class="say">Dokunmatik kiosk'a sesli alternatif.</p>
+      <p class="note">Büyük ekranlı yönlendirme kiosk'ları pahalı, yer kaplıyor ve herkes aynı yüzeye
+        dokunuyor. Aynı işi konuşarak yapmak çoğu senaryoda daha hızlı, daha hijyenik ve daha erişilebilir.</p>
     </div>
   </div>
 </section>
 
 <!-- ══════════ UYGULAMA ══════════ -->
-<section id="uygulama">
+<section class="stage blue" id="uygulama" data-nav="light">
   <div class="wrap">
-    <div class="head reveal">
-      <div class="eyebrow">Masaüstü Uygulaması</div>
-      <h2>Ayarların tek ekranda</h2>
-      <p>Bağlantı durumu, anahtarlar ve kişiselleştirme; dosya düzenlemeden,
-         tek pencereden yönetiliyor.</p>
-    </div>
+    <h2 class="mega rv">tek<br>ekran</h2>
 
-    <div class="app-grid">
-      <div class="app-shot reveal">
+    <div class="app rv">
+      <div class="shot">
         <img src="uygulama.png" alt="İva kontrol paneli — durum ekranı" loading="lazy" width="1200" height="750">
       </div>
-      <div class="reveal">
+      <div>
+        <p class="say">Ayarların tek ekranda.</p>
         <ul class="ticks">
           <li>Anahtarlarını tek ekrandan gir, dosya düzenleme yok</li>
           <li>İva'nın bağlantı durumunu anlık gör</li>
           <li>Mesajlaşma bağlantını tek tuşla test et</li>
           <li>İva'nın seni nasıl tanıdığını düzenle</li>
         </ul>
-        <a class="btn primary dl"
-           href="https://github.com/Talha-Dogan/iva-app/releases/latest/download/Iva-Windows.zip">
+        <a class="btn" href="https://github.com/Talha-Dogan/iva-app/releases/latest/download/Iva-Windows.zip">
           <span>⬇ Windows için indir</span>
           <small>Iva-Windows.zip · Windows 10/11</small>
         </a>
         <div class="dl-note">
-          <b>Nasıl kurulur:</b> İndirdiğin ZIP dosyasına sağ tıkla → <b>Tümünü ayıkla</b>,
-          sonra çıkan klasördeki <b>Iva.exe</b>'yi çalıştır. Windows tanımadığı programlar için
-          uyarı gösterirse <b>Ek bilgi</b> → <b>Yine de çalıştır</b> ile devam edebilirsin.
+          <b>Nasıl kurulur:</b> İndirdiğin ZIP dosyasına sağ tıkla → <b>Tümünü ayıkla</b>, sonra çıkan
+          klasördeki <b>Iva.exe</b>'yi çalıştır. Windows tanımadığı programlar için uyarı gösterirse
+          <b>Ek bilgi</b> → <b>Yine de çalıştır</b> ile devam edebilirsin.
         </div>
-        <div class="microtrust">✓ Ücretsiz · ✓ Kurulum gerektirmez · ✓ Verilerin bilgisayarında kalır</div>
+        <div class="micro">✓ Ücretsiz · ✓ Kurulum gerektirmez · ✓ Verilerin bilgisayarında kalır</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════ ÇOK YAKINDA ══════════ -->
-<section id="yakinda">
+<!-- ══════════ YOL HARİTASI ══════════ -->
+<section class="stage ink" id="yolharitasi" data-nav="light">
   <div class="wrap">
-    <div class="soon-box reveal">
-      <div class="eyebrow" style="margin-bottom:8px">Fiyatlandırma</div>
-      <div class="big">Çok Yakında</div>
-      <h2 style="font-size:clamp(1.1rem,2.4vw,1.5rem);font-weight:700;color:var(--muted)">
-        İva henüz satışta değil.</h2>
-      <p>Şu an prototip geliştirme ve saha testi aşamasındayız. Paketler, fiyatlar ve
-         teslim koşulları ürün hazır olduğunda burada yayınlanacak. Erken haberdar olmak
-         ya da kurumsal pilot uygulama için bize yazabilirsin.</p>
+    <h2 class="mega rv">yol hari-<br>tası</h2>
 
-      <div class="phases">
-        <div class="phase">
-          <div class="pst">Tamamlandı</div>
-          <h4>Kavram ve tasarım</h4>
-          <p>Endüstriyel tasarım, donanım seçimi ve Türkçe sesli etkileşim akışı.</p>
-        </div>
-        <div class="phase now">
-          <div class="pst"><i></i> Şu an burada</div>
-          <h4>Prototip ve test</h4>
-          <p>Çalışan prototip, masaüstü uygulaması ve gerçek ortamda kullanım denemeleri.</p>
-        </div>
-        <div class="phase">
-          <div class="pst">Sırada</div>
-          <h4>Pilot ve lansman</h4>
-          <p>Kurumsal pilot uygulamalar, üretim planı ve fiyatlandırmanın açıklanması.</p>
-        </div>
+    <div class="phases rv">
+      <div class="phase">
+        <div class="st">tamamlandı</div>
+        <h4>Kavram ve tasarım</h4>
+        <p>Endüstriyel tasarım, donanım seçimi ve Türkçe sesli etkileşim akışı.</p>
       </div>
+      <div class="phase now">
+        <div class="st"><i></i> şu an burada</div>
+        <h4>Prototip ve test</h4>
+        <p>Çalışan prototip, masaüstü uygulaması ve gerçek ortamda kullanım denemeleri.</p>
+      </div>
+      <div class="phase">
+        <div class="st">sırada</div>
+        <h4>Pilot ve lansman</h4>
+        <p>Kurumsal pilot uygulamalar, üretim planı ve fiyatlandırmanın açıklanması.</p>
+      </div>
+    </div>
 
-      <div class="hero-actions" style="justify-content:center">
-        <a class="btn primary" id="mailCta" href="#">✉️ Çıkınca Haber Ver</a>
-        <a class="btn ghost" id="mailPilot" href="#">Kurumsal Pilot İçin Yaz</a>
-      </div>
-      <div class="microtrust">Satış yok, ön sipariş yok, ödeme yok — sadece haber.</div>
+    <div class="copy rv" style="margin-top:clamp(30px,4vw,48px)">
+      <p class="say">İva henüz satışta değil.</p>
+      <p class="note">Şu an prototip geliştirme ve saha testi aşamasındayız. Paketler, fiyatlar ve
+        teslim koşulları ürün hazır olduğunda burada yayınlanacak.</p>
+      <p class="note">Satış yok, ön sipariş yok, ödeme yok — sadece haber.</p>
+      <p style="margin-top:24px">
+        <a class="btn line" href="waitlist.html">bekleme listesine katıl <span class="arw">→</span></a>
+      </p>
     </div>
   </div>
 </section>
 
 <!-- ══════════ SSS ══════════ -->
-<section id="sss" class="kiosk">
+<section class="stage cream" id="sss" data-nav="dark">
   <div class="wrap">
-    <div class="head reveal">
-      <div class="eyebrow">Sık Sorulan Sorular</div>
-      <h2>Aklındakiler</h2>
-    </div>
-    <div class="faq reveal">
+    <h2 class="mega rv">sorular</h2>
+    <div class="faq rv">
       <details>
         <summary>İva'yı şimdi satın alabilir miyim?</summary>
         <p>Hayır. İva şu anda geliştirme aşamasında bir prototip; satışa çıkmadı ve ön sipariş
-           almıyoruz. Hazır olduğunda paketler ve fiyatlar bu sayfada yayınlanacak.</p>
+          almıyoruz. Hazır olduğunda paketler ve fiyatlar bu sayfada yayınlanacak.</p>
       </details>
       <details>
         <summary>Ne zaman çıkacak?</summary>
-        <p>Kesin bir tarih vermiyoruz, çünkü henüz saha testi aşamasındayız. Gerçekçi bir
-           takvim oluştuğunda ilk olarak bültene kayıtlı kişilere haber vereceğiz.</p>
+        <p>Kesin bir tarih vermiyoruz, çünkü henüz saha testi aşamasındayız. Gerçekçi bir takvim
+          oluştuğunda ilk olarak bekleme listesindeki kişilere haber vereceğiz.</p>
       </details>
       <details>
         <summary>Gerçekten Türkçe mi anlıyor?</summary>
-        <p>Evet, baştan sona Türkçe: hem seni anlar hem de doğal Türkçe yanıt verir.
-           Uyandırma kelimesini de istediğin gibi değiştirebilirsin.</p>
+        <p>Evet, baştan sona Türkçe: hem seni anlar hem de doğal Türkçe yanıt verir. Uyandırma
+          kelimesini de istediğin gibi değiştirebilirsin.</p>
       </details>
       <details>
         <summary>Verilerim nereye gidiyor?</summary>
-        <p>Mimari, tüm işlemin kendi bilgisayarında veya kurum içi bir sunucuda çalışmasına
-           izin verecek şekilde tasarlanıyor. Bu modda notların ve konuşmaların buluta gitmez.</p>
+        <p>Mimari, tüm işlemin kendi bilgisayarında veya kurum içi bir sunucuda çalışmasına izin
+          verecek şekilde tasarlanıyor. Bu modda notların ve konuşmaların buluta gitmez.</p>
       </details>
       <details>
         <summary>Kurumsal pilot uygulama yapabilir miyiz?</summary>
-        <p>Evet, en çok ihtiyacımız olan şey bu. Hastane, poliklinik, AVM veya benzeri bir
-           ortamda denemek isterseniz bize yazın; senaryoyu birlikte kurgulayalım.</p>
+        <p>Evet, en çok ihtiyacımız olan şey bu. Hastane, poliklinik, AVM veya benzeri bir ortamda
+          denemek isterseniz bize yazın; senaryoyu birlikte kurgulayalım.</p>
       </details>
       <details>
         <summary>Dokunmatik kiosk yerine gerçekten kullanılabilir mi?</summary>
-        <p>Yönlendirme, sık sorulan sorular ve bilgilendirme gibi senaryolarda evet.
-           İmza, ödeme veya belge yazdırma gibi fiziksel çıktı gerektiren işlemler için
-           kiosk hâlâ gerekli — İva bu senaryolarda kiosk'un yükünü hafifletir.</p>
+        <p>Yönlendirme, sık sorulan sorular ve bilgilendirme gibi senaryolarda evet. İmza, ödeme veya
+          belge yazdırma gibi fiziksel çıktı gerektiren işlemler için kiosk hâlâ gerekli — İva bu
+          senaryolarda kiosk'un yükünü hafifletir.</p>
       </details>
       <details>
         <summary>Donanım olarak ne kullanıyor?</summary>
-        <p>Prototip ESP32-S3 tabanlı bir kart, mikrofon dizisi, hoparlör ve 1.3" OLED ekran
-           üzerine kurulu. "Tasarım" bölümündeki 3B modelden parçaları inceleyebilirsin.</p>
+        <p>Prototip ESP32-S3 tabanlı bir kart, mikrofon dizisi, hoparlör ve 1.3" OLED ekran üzerine
+          kurulu. "İçini aç" bölümündeki 3B modelden parçaları inceleyebilirsin.</p>
       </details>
     </div>
   </div>
 </section>
 
+<!-- ══════════ CTA ══════════ -->
+<section class="stage blue" data-nav="light">
+  <div class="wrap cta">
+    <h2 class="mega sm rv">iva çıkınca<br>ilk sen bil.</h2>
+    <p class="note rv">Bekleme listesine katıl; prototipten çıkıp gerçek bir ürüne dönüştüğünde,
+      fiyatlar ve teslim koşulları belli olduğunda ilk haber sana gelsin.</p>
+    <p class="rv"><a class="cta-btn" href="waitlist.html">bekleme listesine katıl <span class="arw">→</span></a></p>
+  </div>
+</section>
+
 <!-- ══════════ FOOTER ══════════ -->
 <footer>
-  <div class="wrap">
-    <div class="brand"><span class="dot"></span> İva</div>
-    <div>© 2026 İva · Türkiye'de tasarlanıyor 🇹🇷 · <a href="#yakinda">İletişim</a></div>
+  <div class="tiles" aria-hidden="true" style="opacity:.1">
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+    <div>iva iva iva iva iva iva iva iva iva iva</div>
+  </div>
+  <div class="wrap" style="position:relative;z-index:2">
+    <p class="foot-word">iva</p>
+    <div class="foot-grid">
+      <div class="foot-links">
+        <a href="#nedir">dokunmadan</a>
+        <a href="#senaryolar">senaryolar</a>
+        <a href="#tasarim">içini aç</a>
+        <a href="#yetenekler">komutlar</a>
+        <a href="#kurumsal">kurumsal</a>
+        <a href="#uygulama">uygulama</a>
+        <a href="#sss">sorular</a>
+        <a href="waitlist.html">bekleme listesi</a>
+      </div>
+      <div class="foot-meta">© 2026 İva · Türkiye'de tasarlanıyor</div>
+    </div>
   </div>
 </footer>
 
@@ -901,11 +877,39 @@
 <script>
 (function(){
   "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---------- nav shadow ---------- */
-  var nav = document.getElementById('nav');
-  var onScroll = function(){ nav.classList.toggle('stuck', window.scrollY > 12); };
-  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+  /* ---------- nav colour follows the band underneath it ---------- */
+  (function(){
+    var nav = document.getElementById('nav'), queued = false;
+    function apply(){
+      queued = false;
+      var el = document.elementFromPoint(24, 38);
+      var band = el && el.closest ? el.closest('[data-nav]') : null;
+      // elementFromPoint can land on the fixed nav itself; fall back to a probe
+      // a little further in from the edge.
+      if (!band){
+        el = document.elementFromPoint(window.innerWidth / 2, 38);
+        band = el && el.closest ? el.closest('[data-nav]') : null;
+      }
+      nav.dataset.on = band ? band.dataset.nav : 'light';
+    }
+    function onScroll(){ if (!queued){ queued = true; requestAnimationFrame(apply); } }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll, {passive:true});
+    setTimeout(apply, 60);
+  })();
+
+  /* ---------- scroll reveal ---------- */
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:.08, rootMargin:'0px 0px -50px 0px'});
+  document.querySelectorAll('.rv').forEach(function(el,i){
+    el.style.transitionDelay = ((i % 3) * 70) + 'ms';
+    io.observe(el);
+  });
 
   /* ---------- tabs ---------- */
   document.querySelectorAll('.tab-btn').forEach(function(btn){
@@ -916,29 +920,54 @@
     });
   });
 
-  /* ---------- scroll reveal ---------- */
-  var io = new IntersectionObserver(function(es){
-    es.forEach(function(e){
-      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
-    });
-  }, {threshold:.1, rootMargin:'0px 0px -40px 0px'});
-  document.querySelectorAll('.reveal').forEach(function(el,i){
-    el.style.transitionDelay = ((i % 3) * 80) + 'ms';
-    io.observe(el);
-  });
+  /* ---------- yatay senaryo şeridi ---------- */
+  (function(){
+    var track = document.getElementById('galTrack');
+    var prev = document.getElementById('galPrev'), next = document.getElementById('galNext');
+    if (!track) return;
+    function step(){
+      var card = track.querySelector('.card');
+      return card ? card.getBoundingClientRect().width + 14 : 340;
+    }
+    function sync(){
+      var max = track.scrollWidth - track.clientWidth - 2;
+      prev.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= max;
+    }
+    prev.addEventListener('click', function(){ track.scrollBy({left:-step(), behavior:'smooth'}); });
+    next.addEventListener('click', function(){ track.scrollBy({left: step(), behavior:'smooth'}); });
+    track.addEventListener('scroll', sync, {passive:true});
+    window.addEventListener('resize', sync, {passive:true});
+    sync();
+  })();
 
-  /* ---------- contact links (spam-safe) ---------- */
-  var U = ['tdogan181','gmail.com'];
-  var link = function(el, subject, body){
-    if (!el) return;
-    el.setAttribute('href', 'mailto:' + U[0] + '@' + U[1] +
-      '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body));
-  };
-  link(document.getElementById('mailCta'), 'İva — çıkınca haber ver',
-       'Merhaba,\n\nİva satışa çıktığında haberdar olmak istiyorum.\n\nAdım:\n');
-  link(document.getElementById('mailPilot'), 'İva — kurumsal pilot uygulama',
-       'Merhaba,\n\nKurumumda İva ile bir pilot uygulama denemek istiyorum.\n\n' +
-       'Kurum:\nLokasyon:\nDüşündüğüm senaryo:\n');
+  /* ---------- OLED yüz ifadeleri ---------- */
+  (function(){
+    var host = document.getElementById('faces');
+    if (!host) return;
+    // [sol göz, sağ göz, ağız yolu] — cihazın küçük ekranındaki ifadeler
+    var FACES = [
+      ['mutlu',   'M14 16a6 6 0 0 1 12 0',      'M36 16a6 6 0 0 1 12 0',      'M22 30q9 8 18 0'],
+      ['şaşkın',  null,                          null,                         'M27 30a4 4 0 1 0 8 0a4 4 0 1 0-8 0'],
+      ['göz kırp','M14 16a6 6 0 0 1 12 0',      'M36 19h12',                  'M23 30q8 6 16 0'],
+      ['sakin',   'M14 19h12',                  'M36 19h12',                  'M24 30h14'],
+      ['düşünen', 'M14 16a6 6 0 0 1 12 0',      'M36 16a6 6 0 0 1 12 0',      'M24 31q7-5 14 0'],
+      ['uykulu',  'M14 20q6-5 12 0',            'M36 20q6-5 12 0',            'M25 30q6 4 12 0']
+    ];
+    FACES.forEach(function(f){
+      var d = document.createElement('div');
+      d.className = 'face-card';
+      var eyes = f[1] === null
+        ? '<circle cx="20" cy="18" r="5"/><circle cx="42" cy="18" r="5"/>'
+        : '<path d="' + f[1] + '" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>' +
+          '<path d="' + f[2] + '" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>';
+      d.innerHTML =
+        '<svg viewBox="0 0 62 44" fill="currentColor" aria-hidden="true">' + eyes +
+        '<path d="' + f[3] + '" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>' +
+        '<div class="lbl">' + f[0] + '</div>';
+      host.appendChild(d);
+    });
+  })();
 
   /* ---------- hero: gentle sway ----------
      A full auto-rotate keeps parking the featureless back of the device toward
@@ -946,9 +975,7 @@
      view the whole time, and still feels alive. */
   (function(){
     var hero = document.getElementById('mvHero');
-    if (!hero) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
+    if (!hero || reduce) return;
     var raf = null, t0 = null, stopped = false;
 
     function frame(ts){
@@ -967,24 +994,17 @@
     ['pointerdown','wheel','keydown'].forEach(function(ev){
       hero.addEventListener(ev, function(){ stopped = true; pause(); }, {passive:true, once:true});
     });
-
     // don't burn frames while the hero is scrolled out of view
     new IntersectionObserver(function(entries){
       entries.forEach(function(e){ e.isIntersecting ? play() : pause(); });
     }, {threshold:0}).observe(hero);
-
-    document.addEventListener('visibilitychange', function(){
-      document.hidden ? pause() : play();
-    });
+    document.addEventListener('visibilitychange', function(){ document.hidden ? pause() : play(); });
   })();
 
-  /* ---------- 3D explorer ---------- */
+  /* ---------- 3B explorer ---------- */
   // pos/normal are in the exploded model's own coordinate space (metres).
   // orbit is the angle we swing the camera to when the part is selected;
   // the camera target moves to `pos` so the part ends up centred.
-  // Positions come straight out of the exploded STL. The v2 model carries no
-  // part metadata, so these names describe what is visible — Talha should
-  // correct them against the real bill of materials.
   var PARTS = [
     { id:'govde',   name:'Gövde',           desc:'Dış kasa ve havalandırma ızgarası', color:'#dde2e4',
       pos:'0.002m -0.004m -0.329m', normal:'0m 0m -1m', orbit:'-58deg 72deg 1.05m' },
@@ -1001,18 +1021,20 @@
     { id:'taban',   name:'Ön çerçeve',      desc:'Ekran çerçevesi ve ön kapak',       color:'#61676a',
       pos:'0.002m 0.012m 0.371m',   normal:'0m 0m 1m',  orbit:'-70deg 74deg 1.0m' }
   ];
-  var ORBIT_CLOSED = '-26deg 74deg auto';
-  var ORBIT_OPEN   = '-72deg 76deg auto';
+  // A radius of `auto` gets clamped to max-camera-orbit (3m) against a 0.29m
+  // model, which parks the camera far too far out. Percentages are relative to
+  // model-viewer's own framing distance, so they stay right for both models.
+  var ORBIT_CLOSED = '-26deg 74deg 105%';
+  var ORBIT_OPEN   = '-72deg 76deg 118%';
 
-  var mv       = document.getElementById('mvMain');
-  var loading  = document.getElementById('expLoading');
-  var hint     = document.getElementById('expHint');
-  var btnC     = document.getElementById('btnClosed');
-  var btnO     = document.getElementById('btnOpen');
-  var ol       = document.getElementById('partsOl');
+  var mv      = document.getElementById('mvMain');
+  var loading = document.getElementById('expLoading');
+  var hint    = document.getElementById('expHint');
+  var btnC    = document.getElementById('btnClosed');
+  var btnO    = document.getElementById('btnOpen');
+  var ol      = document.getElementById('partsOl');
   if (!mv) return;
 
-  /* build the parts list */
   PARTS.forEach(function(p, i){
     var li = document.createElement('li');
     var b  = document.createElement('button');
@@ -1024,13 +1046,12 @@
     li.appendChild(b); ol.appendChild(li);
   });
 
-  var isOpen = false;
+  var isOpen = false, pendingFocus = null;
 
   function clearSel(){
-    document.querySelectorAll('.parts-list button').forEach(function(b){ b.classList.remove('sel'); });
+    document.querySelectorAll('.parts button').forEach(function(b){ b.classList.remove('sel'); });
     document.querySelectorAll('.hotspot').forEach(function(h){ h.classList.remove('sel'); });
   }
-
   function addHotspots(){
     PARTS.forEach(function(p, i){
       var btn = document.createElement('button');
@@ -1047,31 +1068,23 @@
       mv.appendChild(btn);
     });
   }
-
-  function removeHotspots(){
-    mv.querySelectorAll('.hotspot').forEach(function(h){ h.remove(); });
-  }
-
-  function focus(p){
+  function removeHotspots(){ mv.querySelectorAll('.hotspot').forEach(function(h){ h.remove(); }); }
+  function focusPart(p){
     mv.removeAttribute('auto-rotate');
     mv.cameraTarget = p.pos;
     mv.cameraOrbit  = p.orbit;
   }
-
   function select(id){
     var p = PARTS.filter(function(x){ return x.id === id; })[0];
     if (!p) return;
     if (!isOpen) { setMode(true, p); return; }   // focus happens on load
-    focus(p);
+    focusPart(p);
     clearSel();
-    var lb = document.querySelector('.parts-list button[data-part="' + id + '"]');
+    var lb = document.querySelector('.parts button[data-part="' + id + '"]');
     if (lb) lb.classList.add('sel');
     var hs = mv.querySelector('[slot="hotspot-' + id + '"]');
     if (hs) hs.classList.add('sel');
   }
-
-  var pendingFocus = null;
-
   function setMode(open, part){
     isOpen = open;
     pendingFocus = part || null;
@@ -1088,7 +1101,7 @@
     else { mv.setAttribute('auto-rotate',''); }
     if (hint){
       hint.style.opacity = '';
-      hint.textContent = open ? 'Bir parçaya tıkla' : 'Sürükle · Yakınlaştır';
+      hint.textContent = open ? 'bir parçaya tıkla' : 'sürükleyip çevir';
     }
   }
 
@@ -1115,7 +1128,6 @@
     if (b) select(b.dataset.part);
   });
 
-  /* fade the drag hint once the user actually interacts */
   ['pointerdown','wheel'].forEach(function(ev){
     mv.addEventListener(ev, function once(){
       if (hint) hint.style.opacity = '0';

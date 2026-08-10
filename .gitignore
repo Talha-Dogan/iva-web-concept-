@@ -3,6 +3,9 @@
 *.obj
 *.3mf
 
+# Yerel gelistirme araclari (siteye gitmiyor)
+.claude/
+
 # Isletim sistemi artiklari
 Thumbs.db
 desktop.ini
