@@ -68,6 +68,11 @@
   };
   function pick(a){ return a[Math.floor(Math.random() * a.length)]; }
 
+  // İva kadın sesli. Tarayıcı cinsiyet bildirmediği için bilinen isimlerden gidiyoruz:
+  // Emel ve Filiz Türkçe kadın sesleri, "Google Türkçe" de kadın duyuluyor.
+  var FEMALE = /(emel|filiz|seda|yelda|aylin|zeynep|elif|google\s*t[üu]rk|female|kad[ıi]n)/i;
+  var MALE = /(tolga|ahmet|mert|yi[ğg]it|burak|male|erkek)/i;
+
   function init(stage, screen){
     if (!stage) return;
 
@@ -78,7 +83,7 @@
     var sound = false;                      // tarayıcılar izinsiz ses çalmıyor: kapalı başlıyor
     var listening = false, awakeUntil = 0, missed = 0;
     var rec = null, speakingNow = false, restartTimer = null;
-    var voice = null;
+    var voice = null, pitch = 1;
 
     function say(text){ if (hint) hint.textContent = text; }
     function show(on){
@@ -94,19 +99,55 @@
 
     /* ────────────── konuşma ────────────── */
 
+    /**
+     * İva kadın sesiyle konuşuyor. Web Speech API cinsiyet bilgisi vermiyor, o
+     * yüzden isimden gidiyoruz. Sıra: Türkçe kadın sesi → erkek olmayan Türkçe ses
+     * → yalnızca erkek Türkçe ses varsa (Windows'ta çoğu zaman sadece Tolga) onu
+     * kullanıp tonu yükseltiyoruz. Belirli bir sesi zorlamak için:
+     *   localStorage.setItem('iva-voice', 'Microsoft Emel Online (Natural) - Turkish (Turkey)')
+     */
     function pickVoice(){
       if (!canSpeak) return;
       var all = synth.getVoices() || [];
-      for (var i = 0; i < all.length; i++){
-        if (/^tr/i.test(all[i].lang)){ voice = all[i]; return; }
+      var forced = null;
+      try { forced = localStorage.getItem('iva-voice'); } catch (e) {}
+      if (forced){
+        for (var f = 0; f < all.length; f++){
+          if (all[f].name === forced){ voice = all[f]; pitch = 1; return; }
+        }
       }
-      voice = null;                          // Türkçe ses yoksa tarayıcı varsayılanı
+      var tr = [];
+      for (var i = 0; i < all.length; i++) if (/^tr/i.test(all[i].lang)) tr.push(all[i]);
+
+      var byName = function(re){
+        for (var k = 0; k < tr.length; k++) if (re.test(tr[k].name)) return tr[k];
+        return null;
+      };
+      var she = byName(FEMALE);
+      if (she){ voice = she; pitch = 1; return; }
+      var neutral = null;
+      for (var m = 0; m < tr.length; m++) if (!MALE.test(tr[m].name)){ neutral = tr[m]; break; }
+      if (neutral){ voice = neutral; pitch = 1.05; return; }
+      if (tr.length){ voice = tr[0]; pitch = 1.4; return; }   // elimizde bir Tolga var
+      voice = null; pitch = 1.25;                              // Türkçe ses hiç yok
     }
     if (canSpeak){
       pickVoice();
       synth.addEventListener ? synth.addEventListener('voiceschanged', pickVoice)
                              : (synth.onvoiceschanged = pickVoice);
     }
+
+    // hangi sesin seçildiğini görmek için: IvaVoice.current()
+    window.IvaVoice.current = function(){
+      return {
+        voice: voice ? voice.name : '(tarayıcı varsayılanı)',
+        pitch: pitch, sound: sound, listening: listening,
+        turkishVoices: canSpeak
+          ? (synth.getVoices() || []).filter(function(v){ return /^tr/i.test(v.lang); })
+              .map(function(v){ return v.name; })
+          : []
+      };
+    };
 
     function speak(text){
       if (!sound || !canSpeak || !text) return;
@@ -115,7 +156,7 @@
       u.lang = 'tr-TR';
       if (voice) u.voice = voice;
       u.rate = 1;
-      u.pitch = 1.05;
+      u.pitch = pitch;
       // İva kendi sesini duyup tekrar uyanmasın: konuşurken kulağı kapatıyoruz
       u.onstart = function(){ speakingNow = true; pauseEar(); };
       u.onend = u.onerror = function(){ speakingNow = false; resumeEar(); };
