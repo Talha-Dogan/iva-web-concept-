@@ -95,6 +95,8 @@
     border:2px solid var(--edge);background:transparent;color:inherit;cursor:pointer;padding:0;
     transition:.24s var(--ease)}
   .navbtn svg{width:20px;height:20px;display:block}
+  .navbtn-lang{width:auto;padding:0 12px;border-radius:999px;font-weight:900;font-size:.74rem;
+    letter-spacing:.06em}
   .navbtn:hover{background:#fff;color:var(--ink);border-color:#fff}
   .navbtn[aria-pressed="true"]{background:#fff;color:var(--ink);border-color:#fff}
   .navbtn:disabled{opacity:.42;cursor:not-allowed}
@@ -479,6 +481,7 @@
           <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"/>
         </svg>
       </button>
+      <button class="navbtn navbtn-lang" id="btnLang" type="button" aria-label="Switch to English" title="Switch to English">EN</button>
     </div>
 
     <a class="pill" href="waitlist.html">bekleme listesi <span class="arw">→</span></a>
@@ -953,7 +956,7 @@
       </details>
       <details>
         <summary>Donanım olarak ne kullanıyor?</summary>
-        <p>Prototip ESP32-S3 tabanlı bir kart, mikrofon dizisi, hoparlör ve 1.3" OLED ekran üzerine
+        <p>Prototip ESP32-S3 tabanlı bir kart, mikrofon dizisi, hoparlör ve 1.69 inçlik ekran üzerine
           kurulu. "İçini aç" bölümündeki 3B modelden parçaları inceleyebilirsin.</p>
       </details>
     </div>
@@ -1007,6 +1010,7 @@
 
 <script src="js/iva-screen.js"></script>
 <script src="js/iva-voice.js"></script>
+<script src="js/iva-lang.js"></script>
 
 <script>
 (function(){
@@ -1275,6 +1279,8 @@
     });
   }
   function removeHotspots(){ mv.querySelectorAll('.hotspot').forEach(function(h){ h.remove(); }); }
+  // hotspot etiketleri sonradan eklendiği için dil sözlüğüne haber ver
+  function syncLang(){ if (window.IvaLang) window.IvaLang.refresh(); }
   function focusPart(p){
     mv.removeAttribute('auto-rotate');
     mv.cameraTarget = p.pos;
@@ -1315,7 +1321,7 @@
     loading.classList.add('gone');
     if (autoStage) autoStage.attach(mv);
     var p = pendingFocus; pendingFocus = null;
-    if (isOpen) addHotspots();
+    if (isOpen){ addHotspots(); syncLang(); }
     // two frames: let model-viewer finish its own auto-framing first
     requestAnimationFrame(function(){ requestAnimationFrame(function(){
       mv.cameraOrbit = isOpen ? ORBIT_OPEN : ORBIT_CLOSED;

@@ -57,6 +57,11 @@
   .mark{display:block;width:42px;height:42px;transition:transform .3s var(--ease)}
   .mark:hover{transform:rotate(-8deg) scale(1.06)}
   .mark svg{display:block;width:100%;height:100%}
+  .navbtn-lang{border:2px solid rgba(255,255,255,.34);background:transparent;color:inherit;
+    font:inherit;font-weight:900;font-size:.74rem;letter-spacing:.06em;padding:10px 13px;
+    border-radius:999px;cursor:pointer;transition:.26s var(--ease);pointer-events:auto}
+  .navbtn-lang:hover{background:#fff;color:var(--ink);border-color:#fff}
+  .navR{display:flex;align-items:center;gap:9px}
   .back{display:inline-flex;align-items:center;gap:9px;padding:11px 20px;border-radius:999px;
     border:2px solid rgba(255,255,255,.34);font-weight:900;font-size:.88rem;transition:.28s var(--ease)}
   .back:hover{background:#fff;color:var(--ink);border-color:#fff}
@@ -145,7 +150,11 @@
         <circle cx="25" cy="19.5" r="2.9" fill="#24c0fe"/>
       </svg>
     </a>
-    <a class="back" href="index.html"><span class="arw">←</span> ana sayfa</a>
+    <div class="navR">
+      <button class="navbtn navbtn-lang" id="btnLang" type="button"
+              aria-label="Switch to English" title="Switch to English">EN</button>
+      <a class="back" href="index.html"><span class="arw">←</span> ana sayfa</a>
+    </div>
   </div>
 </nav>
 
@@ -164,7 +173,7 @@
           menüde gezinmek zorunda olmamalısın. Cümleyi kur, gerisini İva yapsın.</p>
 
         <p class="note">İva şu anda prototip ve saha testi aşamasında. Avuç içi büyüklüğünde,
-          ESP32-S3 tabanlı açık bir donanım üzerine kuruluyor; küçük OLED ekranındaki yüz konuştukça
+          ESP32-S3 tabanlı açık bir donanım üzerine kuruluyor; küçük ekranındaki yüz konuştukça
           değişiyor. Dilersen tüm veri kendi bilgisayarında kalabiliyor.</p>
 
         <p class="note">Ürün hazır olduğunda — paketler, fiyatlar ve teslim koşulları belli olduğunda —
@@ -224,5 +233,6 @@
 </footer>
 
 <script src="js/waitlist.js"></script>
+<script src="js/iva-lang.js"></script>
 </body>
 </html>
