@@ -33,6 +33,10 @@
   var TICK = 50;                           // 20fps keeps the chunky OLED feel
   var TAU = Math.PI * 2;
 
+  // What "reduced motion" means here: the ambient life stays off (camera drift,
+  // idle blinking, gaze wander, expression cross-fades), but anything the visitor
+  // asked for keeps animating — the die rolls, the wheel spins, the mouth moves
+  // with the words. A die that skips straight to the result demonstrates nothing.
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var MORPH = reduce ? 0 : 420;            // 0 makes every transition instant
 
@@ -66,8 +70,8 @@
    * mouth is actually driven by what is being typed rather than flapping at
    * random.
    */
-  var MOUTH_A = [30, 62], MOUTH_ROUND = [6, 58], MOUTH_I = [26, 40],
-      MOUTH_CONS = [18, 28], MOUTH_SHUT = [22, 13], MOUTH_REST = [20, 18];
+  var MOUTH_A = [34, 76], MOUTH_ROUND = [5, 68], MOUTH_I = [28, 44],
+      MOUTH_CONS = [18, 26], MOUTH_SHUT = [24, 11], MOUTH_REST = [20, 16];
   function mouthFor(ch){
     var c = ch.toLowerCase();
     if (c === 'a' || c === 'e') return MOUTH_A;
@@ -184,7 +188,7 @@
   }
 
   function drawDice(g, s, t){
-    var side = 170, rolling = !reduce && t < s.until - 260;
+    var side = 170, rolling = t < s.until - 260;
     if (rolling && t - s.at > 80){ s.at = t; s.show = 1 + Math.floor(Math.random() * 6); }
     if (!rolling) s.show = s.value;
     g.save();
@@ -218,7 +222,7 @@
   }
 
   function drawTimer(g, s, t){
-    var k = reduce ? 1 : clamp((t - s.from) / Math.max(1, s.until - 300 - s.from), 0, 1);
+    var k = clamp((t - s.from) / Math.max(1, s.until - 300 - s.from), 0, 1);
     var R = 118;
     g.save();
     g.translate(CX, H * 0.5);
@@ -277,7 +281,7 @@
   /** v2's trivia_wheel, as a slot machine: the categories rush past, slow down
       and settle on one. Same six categories the firmware ships with. */
   function drawWheel(g, s, t){
-    var k = reduce ? 1 : clamp((t - s.from) / Math.max(1, s.until - s.from), 0, 1);
+    var k = clamp((t - s.from) / Math.max(1, s.until - s.from), 0, 1);
     var e = 1 - Math.pow(1 - k, 3);
     var n = WHEEL.length;
     var pos = e * (3 * n + s.index);                 // three loops, then land
@@ -350,7 +354,7 @@
 
   /** v2's coin_flip: the coin turns over, squashing as it goes, then lands */
   function drawCoin(g, s, t){
-    var flipping = !reduce && t < s.until - 320;
+    var flipping = t < s.until - 320;
     if (flipping && t - s.at > 70){ s.at = t; s.show = s.show === 'YAZI' ? 'TURA' : 'YAZI'; }
     if (!flipping) s.show = s.value;
     var R = 116;
@@ -598,15 +602,22 @@
     var any = false;
     for (var i = 0; i < stages.length; i++){
       if (!stages[i].live()) continue;
+      // In reduced-motion the loop only runs for a screen that is mid-scene: the
+      // rolling die, the spinning wheel and the moving mouth are the demo itself,
+      // so they keep animating. The ambient stuff — idle blinking, gaze wander,
+      // the camera drift — stays off.
+      if (reduce && !stages[i].busy() && !stages[i].talking()) continue;
       any = true;
       stages[i].step(t, false);
     }
     if (!any){ cancelAnimationFrame(raf); raf = null; }
   }
   function wake(){
-    if (reduce || raf || document.hidden) return;
+    if (raf || document.hidden) return;
     for (var i = 0; i < stages.length; i++){
-      if (stages[i].live()){ lastTick = 0; raf = requestAnimationFrame(loop); return; }
+      if (stages[i].live() && (!reduce || stages[i].busy() || stages[i].talking())){
+        lastTick = 0; raf = requestAnimationFrame(loop); return;
+      }
     }
   }
   function sleep(){ if (raf){ cancelAnimationFrame(raf); raf = null; } }
@@ -626,6 +637,7 @@
     var mouth = 20, mouthWide = 20, mouthTarget = 20, mouthAt = 0;
     var sayShape = null;                     // mouth shape of the letter being typed
     var chars = null, spans = null, offsets = null, sayStart = 0, sayIdx = 0;
+    var spokeAt = -99999;                    // keeps the loop alive until the mouth settles
     var sacX = 0, sacY = 0, sacAt = 0, gazeX = 0, gazeY = 0, wobble = 0;
     var speaking = false, screen = null;
     var script = null, scriptTimer = null, onIdle = null, data = {};
@@ -664,10 +676,10 @@
       // While a line is being typed the target comes from the current letter;
       // "konuşuyor" on its own just flaps, the way the device does when it has no
       // text to go by.
-      var open = p[9], wide = p[8], k2 = MORPH ? 0.42 : 1;
+      var open = p[9], wide = p[8], k2 = 0.42;
       if (speaking && sayShape){
         wide = sayShape[0]; open = sayShape[1];
-        k2 = MORPH ? 0.55 : 1;               // snappier, so single letters register
+        k2 = 0.55;                           // snappier, so single letters register
       } else if (speaking || want === 'konusuyor'){
         if (t - mouthAt > rand(90, 160)){ mouthAt = t; mouthTarget = [14, 26, 44, 66][Math.floor(Math.random() * 4)]; }
         open = mouthTarget;
@@ -722,6 +734,7 @@
     function hush(keep){
       clearTimeout(sayTimer);
       sayTimer = null;
+      if (speaking) spokeAt = now();
       speaking = false;
       sayShape = null;
       chars = spans = offsets = null;
@@ -758,12 +771,6 @@
       bubbleEl.setAttribute('data-on', '');
       var tail = clamp(1200 + 26 * list.length, 1600, 3400);
 
-      if (reduce){
-        els.forEach(function(s){ s.className = 'c on'; });
-        hideTimer = setTimeout(function(){ if (bubbleEl) bubbleEl.removeAttribute('data-on'); }, tail);
-        return tail;
-      }
-
       // The reveal is driven off elapsed time in the render loop, not a chain of
       // per-letter timeouts: a backgrounded tab clamps timers to one a second,
       // which used to leave the text crawling seconds behind the scene it belongs
@@ -791,6 +798,7 @@
       }
       if (sayIdx >= spans.length){
         speaking = false;
+        spokeAt = t;
         sayShape = null;
         chars = spans = offsets = null;
       }
@@ -973,7 +981,9 @@
       play: play, stop: stop, look: look, spin: spin,
       onIdle: function(fn){ onIdle = fn; },
       busy: function(){ return !!script; },
-      talking: function(){ return speaking; }
+      // the tail keeps the loop turning a moment longer so the mouth can close
+      // instead of freezing half-open on the last letter
+      talking: function(){ return speaking || (now() - spokeAt) < 700; }
     };
     stages.push(stage);
     return stage;
