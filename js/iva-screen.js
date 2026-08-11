@@ -638,6 +638,7 @@
     var sayShape = null;                     // mouth shape of the letter being typed
     var chars = null, spans = null, offsets = null, sayStart = 0, sayIdx = 0;
     var spokeAt = -99999;                    // keeps the loop alive until the mouth settles
+    var onSayFn = null, paceK = 1;            // voice layer hooks in here
     var sacX = 0, sacY = 0, sacAt = 0, gazeX = 0, gazeY = 0, wobble = 0;
     var speaking = false, screen = null;
     var script = null, scriptTimer = null, onIdle = null, data = {};
@@ -766,7 +767,7 @@
         txtEl.appendChild(s);
         els.push(s);
         offs.push(total);                   // this letter shows up now...
-        total += charDelay(ch);             // ...then we hold before the next one
+        total += charDelay(ch) * paceK;      // ...then we hold before the next one
       });
       bubbleEl.setAttribute('data-on', '');
       var tail = clamp(1200 + 26 * list.length, 1600, 3400);
@@ -783,6 +784,9 @@
       }, total + tail);
       wake();
       kick();
+      // the voice layer gets the line and how long the letters will take, so it
+      // can speak at a pace the mouth actually matches
+      if (onSayFn) onSayFn(String(text), total);
       return total + Math.min(tail, 900);
     }
 
@@ -980,6 +984,9 @@
       hold: hold, flash: flash, react: react, say: say,
       play: play, stop: stop, look: look, spin: spin,
       onIdle: function(fn){ onIdle = fn; },
+      onSay: function(fn){ onSayFn = fn; },
+      // stretch the letter timing so the text keeps up with a spoken voice
+      pace: function(k){ paceK = k > 0 ? k : 1; },
       busy: function(){ return !!script; },
       // the tail keeps the loop turning a moment longer so the mouth can close
       // instead of freezing half-open on the last letter
