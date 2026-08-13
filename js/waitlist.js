@@ -16,8 +16,9 @@
   var ENDPOINT = 'https://formsubmit.co/ajax/' + addr;
   var RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-  function show(el, text, isErr){
-    el.textContent = text;
+  function show(el, text, isErr, extra){
+    if (window.IvaLang) window.IvaLang.put(el, text, extra);
+    else el.textContent = text + (extra || '');
     el.className = 'msg on' + (isErr ? ' err' : '');
   }
 
@@ -73,7 +74,7 @@
         show(msg, o.done);
       })['catch'](function(){
         show(msg, 'Gönderemedim — e-posta uygulamanı açıyorum, mesaj hazır, göndermen ' +
-                  'yeterli. Açılmazsa ' + addr + ' adresine yazabilirsin.', true);
+                  'yeterli. Açılmazsa şu adrese yazabilirsin:', true, ' ' + addr);
         window.location.href = 'mailto:' + addr +
           '?subject=' + encodeURIComponent(o.subject) +
           '&body=' + encodeURIComponent(o.body(v, d));

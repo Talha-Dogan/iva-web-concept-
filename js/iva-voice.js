@@ -83,9 +83,15 @@
     var sound = false;                      // tarayıcılar izinsiz ses çalmıyor: kapalı başlıyor
     var listening = false, awakeUntil = 0, missed = 0;
     var rec = null, speakingNow = false, restartTimer = null;
-    var voice = null, pitch = 1;
+    var voice = null, pitch = 1, rate = 1, fallback = false;
 
-    function say(text){ if (hint) hint.textContent = text; }
+    // İpucu balonu arayüz metni; İva'nın kendi cümleleri (stage.say) Türkçe
+    // kalıyor ama buradaki yönlendirmeler seçili dile çevriliyor.
+    function say(text){
+      if (!hint) return;
+      if (window.IvaLang) window.IvaLang.put(hint, text);
+      else hint.textContent = text;
+    }
     function show(on){
       if (!hint) return;
       if (on) hint.setAttribute('data-on', '');
@@ -109,27 +115,48 @@
     function pickVoice(){
       if (!canSpeak) return;
       var all = synth.getVoices() || [];
-      var forced = null;
-      try { forced = localStorage.getItem('iva-voice'); } catch (e) {}
-      if (forced){
+      if (!all.length) return;               // liste henüz gelmedi; voiceschanged'de tekrar bakacağız
+
+      // ?voice=emel gibi bir parametre ya da kaydedilmiş tercih her şeyi geçer
+      var wanted = null;
+      try { wanted = localStorage.getItem('iva-voice'); } catch (e) {}
+      var q = (location.search.match(/[?&]voice=([^&]+)/) || [])[1];
+      if (q) wanted = decodeURIComponent(q);
+      if (wanted){
         for (var f = 0; f < all.length; f++){
-          if (all[f].name === forced){ voice = all[f]; pitch = 1; return; }
+          if (all[f].name.toLowerCase().indexOf(wanted.toLowerCase()) !== -1){
+            voice = all[f]; pitch = 1; rate = 1; fallback = false;
+            try { localStorage.setItem('iva-voice', all[f].name); } catch (e) {}
+            return;
+          }
         }
       }
+
       var tr = [];
       for (var i = 0; i < all.length; i++) if (/^tr/i.test(all[i].lang)) tr.push(all[i]);
+      // doğal/çevrimiçi sesler daha iyi duyuluyor, öne alalım
+      tr.sort(function(a, b){
+        var na = /natural|online|google/i.test(a.name) ? 0 : 1;
+        var nb = /natural|online|google/i.test(b.name) ? 0 : 1;
+        return na - nb;
+      });
 
-      var byName = function(re){
-        for (var k = 0; k < tr.length; k++) if (re.test(tr[k].name)) return tr[k];
-        return null;
-      };
-      var she = byName(FEMALE);
-      if (she){ voice = she; pitch = 1; return; }
-      var neutral = null;
-      for (var m = 0; m < tr.length; m++) if (!MALE.test(tr[m].name)){ neutral = tr[m]; break; }
-      if (neutral){ voice = neutral; pitch = 1.05; return; }
-      if (tr.length){ voice = tr[0]; pitch = 1.4; return; }   // elimizde bir Tolga var
-      voice = null; pitch = 1.25;                              // Türkçe ses hiç yok
+      fallback = false; rate = 1;
+      for (var k = 0; k < tr.length; k++){
+        if (FEMALE.test(tr[k].name)){ voice = tr[k]; pitch = 1; return; }
+      }
+      for (var m = 0; m < tr.length; m++){
+        if (!MALE.test(tr[m].name)){ voice = tr[m]; pitch = 1.05; return; }
+      }
+      if (tr.length){
+        // Windows Türkçe için standart olarak yalnızca Tolga geliyor. Elimizdeki tek
+        // kaldıraç perde: biraz yükseltip hızı da hafif düşürüyoruz, yoksa tiz ve
+        // aceleci duyuluyor. Gerçek kadın sesi Edge'in Emel'i ya da Chrome'un
+        // Google Türkçe'si; ikisi de varsa yukarıdaki döngü onları seçiyor.
+        voice = tr[0]; pitch = 1.38; rate = 0.97; fallback = true;
+        return;
+      }
+      voice = null; pitch = 1.2; rate = 1;   // Türkçe ses hiç yok
     }
     if (canSpeak){
       pickVoice();

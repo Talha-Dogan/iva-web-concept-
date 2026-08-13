@@ -385,7 +385,31 @@
     'Bir sorunuz olursa lütfen iletişime geçmekten kaçınmayın — yazın, elimizden geldiğince hızlı dönüyoruz.':
       'If you have a question, please do not hesitate to get in touch — write to us and we will come back as fast as we can.',
     'gönder': 'send',
-    'iva.nedir?': 'what is iva?'
+    'iva.nedir?': 'what is iva?',
+
+    /* ── sekme başlıkları ── */
+    'İva — Sesle Çalışan Türkçe Masaüstü Asistanı': 'İva — The Turkish-Speaking Voice Desk Assistant',
+    'Bekleme Listesi — İva': 'Waitlist — İva',
+
+    /* ── JS'in yazdığı metinler (data-tr ile çevriliyor) ── */
+    /* NOT: 'sürükleyip çevir' ve 'bir parçaya tıkla' yukarıda, 3B bölümünde. */
+    '3B model yüklenemedi.': 'The 3D model could not be loaded.',
+    'Bağlantını kontrol edip sayfayı yenileyebilirsin.': 'Check your connection and reload the page.',
+    'Ses açık — İva artık yüksek sesle konuşuyor.': 'Sound on — İva now speaks out loud.',
+    'Ses kapatıldı.': 'Sound off.',
+    'Durdum.': 'Stopped.',
+    'Dinliyorum — "İva" diye seslen.': 'Listening — just call out "İva".',
+    'Mikrofon kapatıldı.': 'Microphone off.',
+    'Mikrofon izni verilmedi. Adres çubuğundaki kilitten açabilirsin.':
+      'Microphone permission was denied. You can allow it from the lock icon in the address bar.',
+    'Sesli komut için Chrome ya da Edge gerekiyor.': 'Voice commands need Chrome or Edge.',
+    'Geçerli bir e-posta adresi yazar mısın?': 'Could you write a valid email address?',
+    'Bir de mesajını yazar mısın?': 'Could you write your message as well?',
+    'Gönderiliyor…': 'Sending…',
+    'İva hazır olduğunda ilk sen haberdar olacaksın.': 'You will be the first to hear when İva is ready.',
+    'Mesajın bize ulaştı. En kısa sürede döneceğiz.': 'Your message reached us. We will get back to you as soon as we can.',
+    'Gönderemedim — e-posta uygulamanı açıyorum, mesaj hazır, göndermen yeterli. Açılmazsa şu adrese yazabilirsin:':
+      'I could not send it — opening your email app with the message ready, you just need to hit send. If it does not open, write to:'
   };
 
   /* nitelikler: placeholder, aria-label, title, alt */
@@ -408,7 +432,28 @@
       'Add anything you like: your name, where you would use it, what you are wondering about…',
     'İva masaüstü asistanı — 3B model': 'İva desk assistant — 3D model',
     'İva 3B ürün görünümü': 'İva 3D product view',
-    'İva kontrol paneli ekran görüntüsü': 'İva control panel screenshot'
+    'İva kontrol paneli ekran görüntüsü': 'İva control panel screenshot',
+    'İva kontrol paneli — durum ekranı': 'İva control panel — status screen',
+
+    /* senaryo görselleri */
+    'Ders sırasında sıranın üzerinde duran İva; açık defter ve kalem kenarda duruyor':
+      'İva on a desk during a lecture, an open notebook and pen beside it',
+    'Toplantı bitiminde masada duran İva; dağılmış sandalyeler ve kapalı dizüstü bilgisayar':
+      'İva on the table as a meeting ends, chairs pushed about and a closed laptop',
+    'Çalışma masasında kitapların yanında duran İva, duvarda işaretli takvim':
+      'İva next to books on a study desk, a marked calendar on the wall',
+    'Sade bir ev ofisinde masanın ortasında duran İva; telefon ters çevrilmiş':
+      'İva in the middle of a plain home-office desk, a phone turned face down',
+    'Oturma odasında alçak masada duran İva ile konuşan bir kişi':
+      'Someone talking to İva on a low table in a living room',
+    'Poliklinik danışma bankosunda duran İva, arkada bulanık koridor':
+      'İva on a clinic reception desk, a blurred corridor behind it',
+    'Bekleme salonunda yan sehpada duran İva, boş koltuklar':
+      'İva on a side table in a waiting area, empty seats around',
+    'AVM koridorunda ince bir sütun üzerinde duran İva':
+      'İva on a slim column in a shopping-mall walkway',
+    'Mutfak masasında çay bardağının yanında duran İva ve yaşlı bir kişinin elleri':
+      'İva beside a tea glass on a kitchen table, with an older person\'s hands'
   };
 
   // marka adı ve dil düğmesinin kendisi çevrilmez
@@ -425,6 +470,9 @@
         if (!norm(n.nodeValue)) return NodeFilter.FILTER_REJECT;
         var p = n.parentNode, tag = p && p.nodeName;
         if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
+        // data-tr taşıyan kutuların içini JS yazıyor; anlık görüntüsünü
+        // saklarsak sonraki apply() eski metni geri yazıyor.
+        if (p.closest && p.closest('[data-tr]')) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       }
     });
@@ -436,7 +484,7 @@
         if (el.hasAttribute(a)) attrs.push({ el: el, attr: a, tr: el.getAttribute(a) });
       });
     });
-    return { texts: texts, attrs: attrs };
+    return { texts: texts, attrs: attrs, title: document.title };
   }
 
   function apply(to){
@@ -444,12 +492,30 @@
     snapshot.texts.forEach(function(t){
       var key = norm(t.tr);
       var en = EN[key];
-      t.node.nodeValue = (to === 'en' && en) ? t.tr.replace(key, en) : t.tr;
+      // Anahtar normalize edilmiş metin; ham düğümde satır kırığı varsa onu
+      // olduğu gibi aramak (eski hâli) sessizce başarısız oluyordu. Baştaki ve
+      // sondaki boşluğu koruyup gövdeyi değiştiriyoruz.
+      if (to === 'en' && en){
+        var lead = t.tr.match(/^\s*/)[0], tail = t.tr.match(/\s*$/)[0];
+        t.node.nodeValue = lead + en + tail;
+      } else {
+        t.node.nodeValue = t.tr;
+      }
     });
     snapshot.attrs.forEach(function(a){
       var en = ATTR_EN[norm(a.tr)] || EN[norm(a.tr)];
       a.el.setAttribute(a.attr, (to === 'en' && en) ? en : a.tr);
     });
+    // JS'in yazdığı metinler: kaynak Türkçesi data-tr'de durur, dil değişince
+    // buradan yeniden çevrilir (sayfa yüklendikten sonra değişen ipuçları,
+    // form mesajları…).
+    Array.prototype.forEach.call(document.querySelectorAll('[data-tr]'), function(el){
+      var s = el.getAttribute('data-tr'), en = EN[norm(s)];
+      el.textContent = ((to === 'en' && en) ? en : s) + (el.getAttribute('data-tr-add') || '');
+    });
+    // sekme başlığı da dili takip etsin
+    var tEn = EN[norm(snapshot.title)];
+    document.title = (to === 'en' && tEn) ? tEn : snapshot.title;
     document.documentElement.setAttribute('lang', to);
     lang = to;
     var btn = document.getElementById('btnLang');
@@ -490,10 +556,28 @@
     apply(lang);
   }
 
+  /** JS'in ürettiği bir Türkçe metni geçerli dile çevirir */
+  function t(s){ var en = EN[norm(s)]; return (lang === 'en' && en) ? en : s; }
+
+  /**
+   * Metni yaz ve kaynağını sakla, böylece dil değişince yeniden çevrilir.
+   * `extra`, çeviriden sonra olduğu gibi eklenir (e-posta adresi gibi
+   * çevrilmeyen parçalar için).
+   */
+  function put(el, s, extra){
+    if (!el) return;
+    el.setAttribute('data-tr', s);
+    if (extra) el.setAttribute('data-tr-add', extra);
+    else el.removeAttribute('data-tr-add');
+    el.textContent = t(s) + (extra || '');
+  }
+
   window.IvaLang = {
     now: function(){ return lang; },
     set: apply,
     refresh: refresh,
+    t: t,
+    put: put,
     /** çevrilmeden kalan metinleri döker — kapsama kontrolü için */
     missing: function(){
       if (!snapshot) snapshot = collect();

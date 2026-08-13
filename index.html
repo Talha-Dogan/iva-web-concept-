@@ -264,7 +264,10 @@
   .exp-stage{position:relative;border-radius:30px;overflow:hidden;min-height:clamp(400px,56vh,600px);
     background:radial-gradient(ellipse 62% 58% at 50% 46%,rgba(255,255,255,.26),transparent 72%);
     border:2px solid var(--edge)}
-  .exp-stage model-viewer{height:clamp(400px,56vh,600px)}
+  /* Sahne, yanındaki parça listesi kadar uzuyor (align-items:stretch). Sabit
+     yükseklik verirsek model kutunun üst kısmına sıkışıp altı boş kalıyordu,
+     bu yüzden model-viewer kutuyu tamamen dolduruyor. */
+  .exp-stage model-viewer{position:absolute;inset:0;width:100%;height:100%}
   .seg{position:absolute;top:16px;left:16px;z-index:5;display:flex;gap:4px;padding:4px;
     border-radius:999px;background:rgba(255,255,255,.22);border:2px solid var(--edge);
     backdrop-filter:blur(8px)}
@@ -687,7 +690,7 @@
           environment-image="neutral" shadow-intensity="1" shadow-softness="1"
           exposure="1.2" interaction-prompt="none" loading="lazy">
         </model-viewer>
-        <div class="hint" id="expHint">sürükleyip çevir</div>
+        <div class="hint" id="expHint" data-tr="sürükleyip çevir">sürükleyip çevir</div>
       </div>
 
       <div class="parts">
@@ -1317,7 +1320,11 @@
     else { mv.setAttribute('auto-rotate',''); }
     if (hint){
       hint.style.opacity = '';
-      hint.textContent = open ? 'bir parçaya tıkla' : 'sürükleyip çevir';
+      var msg = open ? 'bir parçaya tıkla' : 'sürükleyip çevir';
+      // IvaLang.put metni yazar ve Türkçesini data-tr'de tutar; İngilizce
+      // moddayken doğrudan İngilizcesi yazılır, dil değişirse güncellenir.
+      if (window.IvaLang) window.IvaLang.put(hint, msg);
+      else hint.textContent = msg;
     }
   }
 
@@ -1333,8 +1340,9 @@
     }); });
   });
   mv.addEventListener('error', function(){
-    loading.innerHTML = '<div class="mv-fallback">3B model yüklenemedi.<br>' +
-      'Bağlantını kontrol edip sayfayı yenileyebilirsin.</div>';
+    var tr = function(s){ return window.IvaLang ? window.IvaLang.t(s) : s; };
+    loading.innerHTML = '<div class="mv-fallback">' + tr('3B model yüklenemedi.') + '<br>' +
+      tr('Bağlantını kontrol edip sayfayı yenileyebilirsin.') + '</div>';
   });
 
   btnC.addEventListener('click', function(){ if (isOpen) setMode(false); });
