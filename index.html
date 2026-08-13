@@ -1216,20 +1216,24 @@
   // orbit is the angle we swing the camera to when the part is selected;
   // the camera target moves to `pos` so the part ends up centred.
   var PARTS = [
-    { id:'govde',   name:'Gövde',           desc:'Dış kasa ve havalandırma ızgarası', color:'#dde2e4',
+    { id:'kasa',     name:'Dış kasa',            desc:'Dış kasa ve havalandırma ızgarası',      color:'#dde2e4',
       pos:'0.002m -0.004m -0.329m', normal:'0m 0m -1m', orbit:'-58deg 72deg 1.05m' },
-    { id:'kart',    name:'İç modül',        desc:'Gövdeye oturan iç taşıyıcı',        color:'#009fd7',
+    { id:'anfi',     name:'Anfi modülü',         desc:'MAX98357 I2S ses yükselteci',            color:'#009fd7',
       pos:'0.002m 0.002m -0.178m',  normal:'0m 1m 0m',  orbit:'-68deg 68deg 0.8m' },
-    { id:'buton',   name:'Hoparlör',        desc:'Sesli yanıt ve bildirim sesleri',   color:'#cd7054',
+    { id:'mikrofon', name:'Mikrofon modülü',     desc:'INMP441 I2S MEMS mikrofon',              color:'#cd7054',
       pos:'0.002m 0.125m -0.146m',  normal:'0m 1m 0m',  orbit:'-62deg 44deg 0.8m' },
-    { id:'ekran',   name:'Elektronik kart', desc:'Ana işlemci, Wi-Fi ve ses işleme',  color:'#2b2e31',
+    { id:'sarj',     name:'Şarj devresi',        desc:'TP4056 Type-C korumalı şarj kartı',      color:'#2b2e31',
       pos:'0.047m -0.098m -0.092m', normal:'0m -1m 0m', orbit:'-58deg 92deg 0.75m' },
-    { id:'hoparlor',name:'İç braket',       desc:'Kartı ve hoparlörü sabitler',       color:'#f969a4',
+    { id:'pil',      name:'Lityum pil',          desc:'Cihazı besleyen şarj edilebilir pil',    color:'#f969a4',
       pos:'-0.001m -0.091m 0.149m', normal:'0m -1m 0m', orbit:'-66deg 88deg 0.72m' },
-    { id:'yan',     name:'Yan modül',       desc:'Mikrofon ve bağlantı açıklıkları',  color:'#8b7bf7',
+    { id:'hoparlor', name:'Hoparlör',            desc:'Sesli yanıt ve bildirim sesleri',        color:'#8b7bf7',
       pos:'-0.2m 0.007m 0m',        normal:'-1m 0m 0m', orbit:'-100deg 74deg 0.75m' },
-    { id:'taban',   name:'Ön çerçeve',      desc:'Ekran çerçevesi ve ön kapak',       color:'#61676a',
-      pos:'0.002m 0.012m 0.371m',   normal:'0m 0m 1m',  orbit:'-70deg 74deg 1.0m' }
+    { id:'cerceve',  name:'Ön çerçeve',          desc:'Ekran çerçevesi ve ön kapak',            color:'#61676a',
+      pos:'0.002m 0.012m 0.371m',   normal:'0m 0m 1m',  orbit:'-70deg 74deg 1.0m' },
+    // Ekran + ESP32-S3 kartı ön çerçevenin hemen içinde duruyor: nokta ekran
+    // yüzeyine oturuyor, 7'nin etiketiyle çakışmasın diye biraz aşağıda.
+    { id:'ekran',    name:'Ekran ve beyin kartı',desc:'Waveshare ESP32-S3, 1.69 inç dokunmatik ekran', color:'#f2a63b',
+      pos:'0.002m -0.060m 0.345m',  normal:'0m 0m 1m',  orbit:'-52deg 78deg 0.72m' }
   ];
   // A radius of `auto` gets clamped to max-camera-orbit (3m) against a 0.29m
   // model, which parks the camera far too far out. Percentages are relative to
